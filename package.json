@@ -1,0 +1,32 @@
+{
+	"name": "parallax-scene-js",
+	"version": "2.0.0",
+	"private": true,
+	"description": "Raw WebGL parallax scenes with 1 draw call.",
+	"author": "Yunus Bayraktaroglu",
+	"repository": "github:yunusbayraktaroglu/parallax-scene-js",
+	"bugs": "https://github.com/yunusbayraktaroglu/parallax-scene-js/issues",
+	"license": "MIT",
+	"keywords": [
+		"parallax",
+		"webgl"
+	],
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"lint": "eslint \"src/**/*.ts\"",
+		"lint-fix": "eslint \"src/**/*.ts\" --fix",
+		"release": "node node.versioning.js"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^5.57.1",
+		"@typescript-eslint/parser": "^5.57.1",
+		"eslint": "^8.37.0",
+		"terser": "^5.16.8",
+		"typescript": "^4.9.3",
+		"vite": "^4.0.0",
+		"vite-plugin-glsl": "^1.1.2"
+	}
+}
