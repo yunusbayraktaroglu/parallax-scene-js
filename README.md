@@ -5,6 +5,8 @@ Create **raw WebGL** parallax scenes with only **1 draw call**. The aim of the p
 Supports WebGL 1 & 2. 
 Bundle size < 20 kb.
 
+https://github.com/yunusbayraktaroglu/parallax-scene-js/assets/25721593/03b2734f-f50b-41c9-a172-b1118c52e2e9
+
 [![CI parallax-scene-js](https://github.com/yunusbayraktaroglu/parallax-scene-js/actions/workflows/ci.yml/badge.svg)](https://github.com/yunusbayraktaroglu/parallax-scene-js/actions/workflows/ci.yml)
 
 Live: [https://yunusbayraktaroglu.github.io/parallax-scene-js/](https://yunusbayraktaroglu.github.io/parallax-scene-js/)
