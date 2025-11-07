@@ -1,0 +1,49 @@
+{
+	"name": "@pronotron/parallax-scene-js",
+	"version": "3.0.0",
+	"description": "Create raw WebGL parallax scenes with only 1 draw call.",
+	"author": "Yunus Bayraktaroglu <yunus.bayraktaroglu@gmail.com>",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"sideEffects": false,
+	"license": "MIT",
+	"files": [
+		"dist/**"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/yunusbayraktaroglu/parallax-scene-js.git",
+		"directory": "packages/parallax-scene-js"
+	},
+	"bugs": {
+		"url": "https://github.com/yunusbayraktaroglu/parallax-scene-js/issues"
+	},
+	"homepage": "https://yunusbayraktaroglu.github.io/parallax-scene-js/",
+	"keywords": [
+		"WebGL",
+		"parallax"
+	],
+	"scripts": {
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"build": "tsup src/index.ts --format esm,cjs --dts --minify terser",
+		"dev": "tsup src/index.ts --format esm,cjs --dts --watch ",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --max-warnings 0 --fix",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+	},
+	"devDependencies": {
+		"@pronotron/config-eslint": "*",
+		"@pronotron/config-ts": "*",
+		"@pronotron/utils": "^0.0.1-beta.6",
+		"@types/jest": "^30.0.0",
+		"jest": "^30.2.0",
+		"jest-environment-jsdom": "^30.2.0",
+		"terser": "^5.33.0",
+		"ts-jest": "^29.4.5",
+		"ts-node": "^10.9.2",
+		"tsup": "^8.5.0",
+		"typescript": "^5.9.3"
+	}
+}
