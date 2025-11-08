@@ -1,3 +1,5 @@
+import { isPOTTexture } from "../../helpers/isPot";
+
 // Define GLenum as a number for type clarity
 type GLenum = number;
 
@@ -55,21 +57,6 @@ export interface TextureOptions
 	 * @default 0
 	 */
 	level?: number;
-
-	/**
-	 * The width of the texture. Required for textures with no 'src'.
-	 */
-	width?: number;
-
-	/**
-	 * The height of the texture. Required for textures with no 'src'.
-	 */
-	height?: number;
-
-	/**
-	 * The depth of the texture (for 3D or 2D array textures).
-	 */
-	depth?: number;
 
 	/**
 	 * The texture minification filter. (gl.TEXTURE_MIN_FILTER)
@@ -228,16 +215,24 @@ export class TextureHelper
 		const overridenOptions = { ...defaultOptions, ...options };
 		const { target, level, internalFormat, format, type } = overridenOptions;
 
+		const isPowerOfTwo = isPOTTexture( image.width, image.height );
+
+		if ( ! isPowerOfTwo ){
+			overridenOptions.min = gl.LINEAR; 
+			overridenOptions.mag = gl.LINEAR; 
+			overridenOptions.wrap = gl.CLAMP_TO_EDGE;
+		}
+
 		const texture = gl.createTexture();
 		gl.bindTexture( target, texture );
 
 		// 1. Set WebGL pixel store parameters
-		this._setPixelStore( options );
+		this._setPixelStore( overridenOptions );
 
 		gl.texImage2D( target, level, internalFormat, format, type, image );
 
 		// Sets WebGL texture parameters
-		this._setTextureParameters( target, options );
+		this._setTextureParameters( target, overridenOptions );
 
 		return texture;
 	}
@@ -372,152 +367,9 @@ export class TextureHelper
 	{
 		this._gl.texParameteri( target, pname, param );
 	}
+	
 	private _texParameterf( target: number, pname: number, param: number )
 	{
 		this._gl.texParameterf( target, pname, param );
 	}
 }
-
-
-
-
-
-
-// export function createTexture( gl: ParallaxRenderingContext, image: ImageBitmap, options: TextureOptions = {} ): WebGLTexture
-// {
-// 	TextureSetter.gl = gl;
-
-// 	const overridenOptions = { ...defaultOptions, ...options };
-
-// 	const { target, level, internalFormat, format, type } = overridenOptions;
-
-// 	const texture = gl.createTexture();
-// 	gl.bindTexture( target, texture );
-
-// 	// 1. Set WebGL pixel store parameters
-// 	setPixelStore( gl, options );
-
-// 	gl.texImage2D( target, level, internalFormat, format, type, image );
-
-// 	// Sets WebGL texture parameters
-// 	setTextureParameters( gl, target, options );
-
-// 	return texture;
-// }
-
-// /**
-//  * Sets WebGL pixel store parameters from an options object.
-//  *
-//  * @param gl The WebGL rendering context.
-//  * @param options An object with texture parameters.
-//  */
-// function setPixelStore( gl: ParallaxRenderingContext, options: TextureOptions )
-// {
-// 	// --- Pixel Store parameters ---
-//   	// Alignment for pixel rows (default is 1 in TWGL):contentReference[oaicite:44]{index=44}.
-// 	if ( options.unpackAlignment !== undefined ){
-// 		TextureSetter._pixelStorei( gl.UNPACK_ALIGNMENT, options.unpackAlignment );
-// 	}
-
-// 	if ( options.premultiplyAlpha !== undefined ){
-// 		TextureSetter._pixelStorei( gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, options.premultiplyAlpha );
-// 	}
-
-// 	if ( options.flipY !== undefined ){
-// 		TextureSetter._pixelStorei( gl.UNPACK_FLIP_Y_WEBGL, options.flipY );
-// 	}
-
-// 	if ( options.colorspaceConversion !== undefined ){
-// 		TextureSetter._pixelStorei( gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, options.colorspaceConversion );
-// 	}
-// }
-
-// /**
-//  * Sets WebGL texture parameters (filtering and wrapping) from an options object.
-//  *
-//  * @param gl The WebGL rendering context.
-//  * @param target The texture target (e.g., gl.TEXTURE_2D).
-//  * @param options An object with texture parameters.
-//  */
-// function setTextureParameters( gl: ParallaxRenderingContext, target: GLenum, options: TextureOptions )
-// {
-// 	// --- Texture Filtering ---
-// 	// Determine min/mag filters. If minMag given, use for both; else use min/mag individually.
-// 	// Use shorthand 'minMag' if 'min' or 'mag' are not specified
-// 	const minFilter = options.min ?? options.minMag ?? gl.NEAREST_MIPMAP_NEAREST; 	// default min filter:contentReference[oaicite:45]{index=45};
-// 	const magFilter = options.mag ?? options.minMag ?? gl.LINEAR;					// default mag filter:contentReference[oaicite:46]{index=46};
-
-// 	TextureSetter._texParameteri( target, gl.TEXTURE_MIN_FILTER, minFilter );
-// 	TextureSetter._texParameteri( target, gl.TEXTURE_MAG_FILTER, magFilter );
-
-// 	// --- Texture Wrapping ---
-// 	// If a uniform wrap is given, apply to S, T (and R if available).
-// 	if ( options.wrap !== undefined ){
-// 		TextureSetter._texParameteri( target, gl.TEXTURE_WRAP_S, options.wrap );
-// 		TextureSetter._texParameteri( target, gl.TEXTURE_WRAP_T, options.wrap );
-// 		// TEXTURE_WRAP_R is WebGL2 only:contentReference[oaicite:47]{index=47}.
-// 		if ( 'TEXTURE_WRAP_R' in gl ){
-// 			TextureSetter._texParameteri( target, ( gl as WebGL2RenderingContext ).TEXTURE_WRAP_R, options.wrap );
-// 		}
-// 	}
-
-// 	// Per-axis wrap overrides:
-// 	if ( options.wrapS !== undefined ){
-// 		TextureSetter._texParameteri( target, gl.TEXTURE_WRAP_S, options.wrapS );
-// 	}
-// 	if ( options.wrapT !== undefined ){
-// 		TextureSetter._texParameteri( target, gl.TEXTURE_WRAP_T, options.wrapT );
-// 	}
-// 	// WebGL2: wrapR for 3D textures or 2D array textures:contentReference[oaicite:48]{index=48}.
-// 	if ( options.wrapR !== undefined && 'TEXTURE_WRAP_R' in gl ){
-// 		TextureSetter._texParameteri( target, ( gl as WebGL2RenderingContext ).TEXTURE_WRAP_R, options.wrapR );
-// 	}
-
-// 	// --- WebGL2 / Extension Parameters ---
-// 	const gl2 = gl as WebGL2RenderingContext;
-
-// 	// level of detail
-// 	if ( options.minLod && gl2.TEXTURE_MIN_LOD ){
-// 		TextureSetter._texParameterf( target, gl2.TEXTURE_MIN_LOD, options.minLod );
-// 	}
-// 	if ( options.maxLod && gl2.TEXTURE_MAX_LOD ){
-// 		TextureSetter._texParameterf( target, gl2.TEXTURE_MAX_LOD, options.maxLod );
-// 	}
-
-// 	// WebGL2: base and max level of mipmaps
-// 	if ( options.baseLevel && gl2.TEXTURE_BASE_LEVEL ){
-// 		TextureSetter._texParameteri( target, gl2.TEXTURE_BASE_LEVEL, options.baseLevel );
-// 	}
-// 	if ( options.maxLevel && gl2.TEXTURE_MAX_LEVEL ){
-// 		TextureSetter._texParameteri( target, gl2.TEXTURE_MAX_LEVEL, options.maxLevel );
-// 	}
-
-// 	// Compare mode (for shadow samplers)
-// 	if ( options.compareFunc && gl2.TEXTURE_COMPARE_FUNC ){
-// 		TextureSetter._texParameteri( target, gl2.TEXTURE_COMPARE_FUNC, options.compareFunc );
-// 	}
-// 	if ( options.compareMode && gl2.TEXTURE_COMPARE_MODE ){
-// 		TextureSetter._texParameteri( target, gl2.TEXTURE_COMPARE_MODE, options.compareMode );
-// 	}
-
-// 	// --- Mipmap Generation ---
-// 	// If auto-mipmap is enabled (default true):contentReference[oaicite:49]{index=49}, generate mipmaps now.
-// 	if ( options.auto !== false ){
-// 		gl.generateMipmap( target );  // generates a full mipmap chain:contentReference[oaicite:50]{index=50}
-// 	}
-
-// 	// Anisotropy Extension
-// 	if ( options.aniso ){
-
-// 		const ext = 
-// 			gl.getExtension( 'EXT_texture_filter_anisotropic' ) ||
-// 			gl.getExtension( 'MOZ_EXT_texture_filter_anisotropic' ) ||
-// 			gl.getExtension( 'WEBKIT_EXT_texture_filter_anisotropic' );
-		
-// 		if ( ext ){
-// 			const maxAniso = gl.getParameter( ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT );
-// 			TextureSetter._texParameterf( target, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min( maxAniso, options.aniso ) );
-// 		}
-
-// 	}
-// }

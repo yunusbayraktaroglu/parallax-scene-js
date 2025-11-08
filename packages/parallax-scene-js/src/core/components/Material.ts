@@ -1,5 +1,5 @@
-import { Uniforms } from '../controllers/uniforms/UniformsHelper';
-import { ProgramHelper, ProgramInfo } from '../controllers/programs/ProgramInfo';
+import { Uniforms } from '../controllers/webgl/UniformsHelpers';
+import { ProgramInfo } from '../controllers/webgl/ProgramHelpers';
 import { GLOBAL_UNIFORMS } from '../controllers/RenderController';
 
 type ShadingSettings = {
@@ -49,10 +49,11 @@ export class Material
 
 
 import vertexShader from '../shaders/vertex.glsl';
+import vertexClipSpace from '../shaders/vertex-clipspace.glsl';
 import fragmentShader from '../shaders/fragment.glsl';
 
 export const DEFAULT_MATERIAL = new Material( { 
-	vertex: vertexShader,
+	vertex: vertexClipSpace,
 	fragment: fragmentShader,
 	transparent: true,
 	uniforms: {

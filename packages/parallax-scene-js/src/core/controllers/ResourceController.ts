@@ -1,8 +1,9 @@
+import { type TextureOptions, TextureHelper } from "./webgl/TextureHelpers";
+
 import { BinaryTreeTexturePacker } from "../packers/BinaryTreeTexturePacker";
 import { SkylineTexturePacker } from "../packers/SkylineTexturePacker";
+import { type MergeResult } from "../packers/BaseTexturePacker";
 
-import { type MergeResult, type PackResult } from "../packers/BaseTexturePacker";
-import { TextureHelper } from "./textures/TextureOptions";
 import { generateGroupHash } from "../helpers/hashCreator";
 
 export type ImageDownloadResult = {
@@ -38,9 +39,9 @@ export class ResourceController
 	 * 
 	 * @param imageBitmap 
 	 */
-	createTexture( imageBitmap: ImageBitmap )
+	createTexture( imageBitmap: ImageBitmap, options?: TextureOptions )
 	{
-		const texture = this._textureHelper.createTexture( imageBitmap );
+		const texture = this._textureHelper.createTexture( imageBitmap, options );
 		return texture;
 	}
 

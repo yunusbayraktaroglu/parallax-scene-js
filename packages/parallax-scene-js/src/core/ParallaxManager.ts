@@ -50,10 +50,10 @@ export class ParallaxManager
 			const images = await this._loadController.loadImagesAsync( scene, onProgress );
 
 			// Merge images into 1 ImageBitmap
-			const { image, data } = await this._resourceController.merge( images );
+			const { image, data } = await this._resourceController.merge( images, { alpha: true } );
 
 			// Create WebGL texture from merged image
-			const mergedImageTexture = this._resourceController.createTexture( image );
+			const mergedImageTexture = this._resourceController.createTexture( image, { premultiplyAlpha: false } );
 
 			// Add merged image to resources
 			this._resourceController.add( `Merged:${ scene }`, image );
@@ -117,7 +117,7 @@ export class ParallaxManager
 	 */
 	updateResolution( width: number, height: number, pixelRatio: number = 1.0 )
 	{
-		console.log( "UPDATE RES" );
+		console.log( "UPDATE RES", width, height );
 		this._renderController.setPixelRatio( pixelRatio );
 		this._renderController.updateResolution( width, height );
 	}

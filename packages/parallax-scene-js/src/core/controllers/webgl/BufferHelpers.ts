@@ -42,7 +42,9 @@ export type BufferStorage = {
 	size: number;
 };
 
-
+/**
+ * Responsible for generating, updating, deleting WebGLBuffers
+ */
 export class BufferHelper
 {
 	gl: WebGLRenderingContext | WebGL2RenderingContext;
@@ -112,7 +114,7 @@ export class BufferHelper
 			return;
 		}
 
-		console.log( "BUFFER SKIPPED", attribute );
+		//console.log( "BUFFER SKIPPED", attribute );
 
 	}
 

@@ -102,7 +102,7 @@ export abstract class BaseTexturePacker
 			context.drawImage( atlas.source, atlas.x, atlas.y, atlas.w, atlas.h );
 		}
 
-		return await createImageBitmap( canvas );
+		return await createImageBitmap( canvas, { premultiplyAlpha: 'none' } );
 	}
 
 	/**

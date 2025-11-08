@@ -1,9 +1,10 @@
-import { ParallaxScene } from '../components/ParallaxScene';
-import { BufferHelper } from './buffers/BufferHelpers';
-import { AttributeBinder, ProgramHelper, ProgramInfo } from './programs/ProgramInfo';
-import { Uniforms, UniformsHelper } from './uniforms/UniformsHelper';
+import { BufferHelper } from './webgl/BufferHelpers';
+import { ProgramHelper, ProgramInfo } from './webgl/ProgramHelpers';
+import { AttributeHelper } from './webgl/AttributeHelpers';
+import { Uniforms, UniformsHelper } from './webgl/UniformsHelpers';
 
 import { BufferAttribute } from '../buffers/BufferAttribute';
+import { ParallaxScene } from '../components/ParallaxScene';
 
 export const GLOBAL_UNIFORMS = {
 	// We will have 1 canvas, resolution of our canvas
@@ -27,7 +28,7 @@ export class RenderController
 
 	private _uniformsHelper: UniformsHelper;
 	private _buffersHelper: BufferHelper;
-	private _attributesHelper: AttributeBinder;
+	private _attributesHelper: AttributeHelper;
 	private _programHelper: ProgramHelper;
 
 	private _materialCache?: number;
@@ -39,20 +40,19 @@ export class RenderController
 
 		this._buffersHelper = new BufferHelper( gl );
 		this._programHelper = new ProgramHelper( gl );
-		this._attributesHelper = new AttributeBinder( gl );
+		this._attributesHelper = new AttributeHelper( gl );
 		this._uniformsHelper = new UniformsHelper( gl );
 
 		this._extensions = glVersion === "2" ? new GLExtensionV2( gl as WebGL2RenderingContext ) : new GLExtensionV1( gl );
 
 		gl.clearColor( 0, 1, 0, 1 );
 
-		// Alpha rendering
 		gl.enable( gl.BLEND );
 		gl.blendFunc( gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
-
-		// Enable cull face
-		//gl.enable( gl.CULL_FACE );
-		//gl.cullFace( gl.FRONT );
+		//gl.blendFuncSeparate( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
+		
+		gl.enable( gl.CULL_FACE );
+		gl.cullFace( gl.FRONT );
 	}
 
 	setPixelRatio( ratio: number =  1 )
@@ -93,7 +93,7 @@ export class RenderController
 	{
 		const gl = this._renderingContext;
 
-		gl.clear( gl.COLOR_BUFFER_BIT );
+		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
 		if ( ! scene.material ){
 			console.warn( `Scene: '${ scene.id }' has not a material.` );
@@ -108,8 +108,8 @@ export class RenderController
 
 		// Builds VAO and ProgramInfo if missing
 		if ( ! scene.vao ){
-			this._onBeforeRender( scene );
 		}
+		this._onBeforeRender( scene );
 
 		// Bind program and uniforms if its not in cache
 		if ( this._materialCache !== scene.material.id ){
@@ -128,13 +128,16 @@ export class RenderController
 		}
 
 
+		const { x, y, w, h } = scene.rect;
+
+				GLOBAL_UNIFORMS.u_resolution.value.x = w;
+		GLOBAL_UNIFORMS.u_resolution.value.y = h;
 
 		const { uniforms, programInfo: { uniformsData } } = scene.material as { uniforms: Uniforms, programInfo: ProgramInfo };
 
 		this._uniformsHelper.bindUniforms( uniformsData, uniforms );
 
-		
-		//console.log( scene.pointer )
+		// console.log( scene.pointer )
 
 		// this._uniformsHelper.bindUniforms( scene.material.programInfo!.uniformsData, {
 		// 	u_pointer: {
@@ -154,9 +157,8 @@ export class RenderController
 		 */
 		this._extensions.bindVertexArray( scene.vao! );
 
-		//const { x, y, w, h } = scene.rect;
-		//gl.viewport( x, y, w, h );
-    	//gl.scissor( x, y, w, h );
+		gl.viewport( x, y, w, h );
+    	gl.scissor( x, y, w, h );
 
 		gl.drawElements( gl.TRIANGLES, scene.geometry.index!.count, gl.UNSIGNED_SHORT, 0 );
 
@@ -187,6 +189,8 @@ export class RenderController
 		// Object.values( scene.geometry.attributes ).forEach(( attribute, ndx ) => {
 			//this._buffersHelper.update( attribute as BufferAttribute, this._glController.gl.ARRAY_BUFFER );
 		// });
+
+		if ( scene.vao ) return;
 
 		this._bindInterleavedVAO( scene );
 	}

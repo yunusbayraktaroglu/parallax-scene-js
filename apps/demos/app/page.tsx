@@ -6,25 +6,26 @@ import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
 
 import { usePointerDataContext } from "./hooks/PointerDataProvider";
 
-const prlx = { x: 1, y: 2 };
+const prlx = { x: 1, y: 1 };
+
 const basicData: ParallaxSceneLayer[] = [
 	{
 		url: "images/parallax-1.png",
 		sizeInBytes: 548864,
-		parallax: prlx,
-		fit: { w: 1 }
+		parallax: { x: 0.7, y: 1 },
+		fit: { h: 1.5 }
 	},
 	{
 		url: "images/parallax-3.png",
 		sizeInBytes: 430882,
-		parallax: prlx,
-		fit: { w: 1 }
+		parallax: { x: 0.8, y: 1 },
+		fit: { h: 1.5 }
 	},
 	{
 		url: "images/parallax-motor.png",
 		sizeInBytes: 425055,
-		parallax: prlx,
-		fit: { w: 1 }
+		parallax: { x: 1, y: 1 },
+		fit: { h: 1.5 }
 	},
 ];
 
@@ -38,6 +39,7 @@ export default function HomePage()
 	const sceneRef = useRef<HTMLDivElement>( null );
 
 	const [ scene, setScene ] = useState<ParallaxScene>();
+	const [ loaded, setLoaded ] = useState( 0 );
 
 	useEffect(() => {
 
@@ -47,7 +49,10 @@ export default function HomePage()
 		PARALLAX_MANAGER.current = new ParallaxManager( {
 			canvas: canvasRef.current!,
 			attributes: {
-				alpha: false,
+				alpha: true,
+				depth: false,
+				stencil: false,
+				premultipliedAlpha: false
 			}
 		} );
 
@@ -63,7 +68,8 @@ export default function HomePage()
 		const loadScene = async () => {
 			try {
 				const PARALLAX_SCENE = await PARALLAX_MANAGER.current!.initScene( basicData, ( percent: number ) => {
-					console.log( `Loaded: %${ percent }` );
+					setLoaded( percent );
+					//console.log( `Loaded: %${ percent }` );
 				} );
 				setScene( PARALLAX_SCENE );
 			} catch( error ){
@@ -109,8 +115,17 @@ export default function HomePage()
 
 		const ResizeObserver = window.ResizeObserver || Polyfill;
 		const ro = new ResizeObserver( ( entries, observer ) => {
+			
+			const rect = sceneRef.current!.getBoundingClientRect();
+			const width  = rect.right - rect.left;
+			const height = rect.bottom - rect.top;
+			const left   = rect.left;
+			const bottom = canvasRef.current!.clientHeight - rect.bottom;
+			
 			const { clientWidth, clientHeight } = canvasRef.current!;
-			scene.setRect( { x: 0, y: 0, w: clientWidth, h: clientHeight } );
+
+			scene.setRect( { x: left, y: bottom, w: width, h: height } );
+			//scene.setRect( { x: 0, y: 0, w: clientWidth, h: clientHeight } );
 		} );
 		ro.observe( canvasRef.current! );
 
@@ -142,6 +157,7 @@ export default function HomePage()
 				<div ref={ sceneRef } className="w-[500px] h-[500px] border"></div>
 				<div className="label">
 					<h1 className="text-white">Parallax Scene JS - 01</h1>
+					<h1 className="text-black">{ loaded }</h1>
 				</div>
 			</div>
 		</div>

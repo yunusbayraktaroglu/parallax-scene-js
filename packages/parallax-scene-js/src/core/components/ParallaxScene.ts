@@ -199,17 +199,8 @@ export class ParallaxSceneBase
 	 */
 	setRect( newRect: Rectangle )
 	{
-		console.log( "SET RECT" );
-
-		const newRatio = newRect.w / this.initialRect.w;
-		
 		this.rect = newRect;
-		this.camera.setProjection( newRect.w, newRect.h, newRatio );
-		this.material.updateUniforms({
-			u_projection: {
-				value: this.camera.getProjectionMatrix()
-			},
-		});
+		this.resize( newRect.w, newRect.h );
 	}
 
 	/**
@@ -254,24 +245,24 @@ export class ParallaxSceneBase
 	}
 
 	/**
-	 * Updates scale attribute with given settings and dimensions
+	 * Updates scale attribute with given settings and dimensions.
+	 * if {@link ParallaxLayerSettings.fit} is not defined, scale is equal to source image size.
 	 * 
 	 * @param sceneWidth Scene render width 
 	 * @param sceneHeight Scene render height
+	 * @param scaleAttribute Scale attribute of the geometry
 	 * @returns 
 	 */
 	protected _resize( sceneWidth: number, sceneHeight: number, scaleAttribute: InterleavedBufferAttribute | BufferAttribute ): void
 	{
 		for ( const { id, ratio, settings } of this.settings.layers ){
 
-			/**
-			 * Keep default scale of plane if 'fit' option is not defined 
-			 * default scale: image source size
-			 */
+			// default scale: image source size
 			if ( ! settings.fit ) return;
 
-			let width, height;
-				
+			let width = 0;
+			let height = 0;
+
 			if ( settings.fit.h ){
 
 				height = sceneHeight * settings.fit.h;
@@ -284,7 +275,12 @@ export class ParallaxSceneBase
 
 			}
 
-			if ( ! width || ! height ) return;
+			if ( ! width || ! height ){
+				throw new Error( `Scene: ${ this.settings.id }, scaling failed.` );
+			}
+
+			width = Math.floor( width );
+			height = Math.floor( height );
 
 			// Select the layer geometry in merged geometry
 			const layerGeometry = this.geometry.groups.find( planeGeo => planeGeo.id === id )!;
@@ -318,11 +314,11 @@ export class ParallaxScene extends ParallaxSceneBase
 	{
 		super( settings );
 		this._interleaveAttributes();
-		this.resize( this.initialRect.w, this.initialRect.h );
 	}
 
 	resize( sceneWidth: number, sceneHeight: number )
 	{
+		// Get scale attribute in InterleavedAttributes
 		const scaleAttribute = this.attributes.find( attribute => attribute.name === "scale" )!;
 
 		this._resize( sceneWidth, sceneHeight, scaleAttribute );

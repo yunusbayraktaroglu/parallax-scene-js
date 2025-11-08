@@ -27,9 +27,7 @@ export class ParallaxGeometry extends BufferGeometry
 		const segment_width = width / gridX;
 		const segment_height = height / gridY;
 
-		/**
-		 * Create vertex positions and uvs
-		 */
+		// Create vertex positions and uvs
 		const vertices = [];
 		const uvs = [];
 
@@ -50,9 +48,7 @@ export class ParallaxGeometry extends BufferGeometry
 
 		verticesCount = vertices.length / 2;
 
-		/**
-		 * Create indices
-		 */
+		// Create indices
 		const indices = [];
 
 		for ( let iy = 0; iy < gridY; iy ++ ){
@@ -70,10 +66,9 @@ export class ParallaxGeometry extends BufferGeometry
 			}
 		}
 
-		/**
-		 * Create atlas attributes
-		 */
+		// Create atlas attributes
 		const atlas = [];
+
 		let { w, h, x, y } = parallaxLayer.atlas.normalized;
 
 		for ( let j = 0; j < verticesCount * 4; j += 4 ){
@@ -83,24 +78,21 @@ export class ParallaxGeometry extends BufferGeometry
 			atlas[ j + 3 ] = y;
 		}
 
-		/**
-		 * Create parallax attributes
-		 */
+		// Create parallax attributes
 		const parallax = [];
 
-		/** Insert x, y, as vec2 */
+		// Insert x, y, as vec2
 		for ( let j = 0; j < verticesCount * 2; j += 2 ){
 			parallax[ j + 0 ] = parallaxLayer.settings.parallax.x || 0;
 			parallax[ j + 1 ] = parallaxLayer.settings.parallax.y || 0;
 		}
 
-		/**
-		 * Create scale attributes
-		 * default: image source default size
-		 */
+
+		// Create scale attributes
+		// default: image source default size
 		const scale = [];
 
-		/** Insert x, y, as vec2 */
+		// Insert x, y, as vec2
 		for ( let j = 0; j < verticesCount * 2; j += 2 ){
 			scale[ j + 0 ] = parallaxLayer.atlas.w;
 			scale[ j + 1 ] = parallaxLayer.atlas.h;

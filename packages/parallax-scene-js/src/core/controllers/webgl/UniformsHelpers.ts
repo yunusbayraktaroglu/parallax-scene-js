@@ -1,4 +1,4 @@
-import { ShaderUniformData } from "../programs/ProgramInfo";
+import { ShaderUniformData } from "./ProgramHelpers";
 
 export type Uniforms = {
     [ uniformName: string ]: {
@@ -6,6 +6,9 @@ export type Uniforms = {
     };
 };
 
+/**
+ * Responsible to getting uniform binding methods to WebGL
+ */
 export class UniformsHelper
 {
 	gl: ParallaxRenderingContext;
@@ -38,7 +41,8 @@ export class UniformsHelper
 			const uniformData = uniformDatas.find( uniformData => uniformData.name === name );
 
 			if ( ! uniformData ){
-				console.warn( `Uniform: '${ name }' does not exist in program.` );
+				console.warn( `Uniform: '${ name }' does not exist in WebGL program.` );
+				delete uniforms[ name ];
 				return;
 			}
 
