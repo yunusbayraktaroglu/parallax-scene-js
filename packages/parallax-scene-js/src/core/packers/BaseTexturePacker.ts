@@ -96,13 +96,15 @@ export abstract class BaseTexturePacker
 			finalHeight = packResult.size.h;
 		}
 
-		const { canvas, context } = this._getCanvas( useOffscreen, finalWidth, finalHeight, canvasSettings );
+		const { canvas, context } = this._getCanvas( finalWidth, finalHeight, useOffscreen, canvasSettings );
 
 		for ( const atlas of packResult.atlas ){
 			context.drawImage( atlas.source, atlas.x, atlas.y, atlas.w, atlas.h );
 		}
 
-		return await createImageBitmap( canvas, { premultiplyAlpha: 'none' } );
+		const options: ImageBitmapOptions = { premultiplyAlpha: 'none', colorSpaceConversion: 'none' };
+
+		return await createImageBitmap( canvas, options );
 	}
 
 	/**
@@ -111,10 +113,10 @@ export abstract class BaseTexturePacker
 	 * @param useOffscreen 
 	 * @param width 
 	 * @param height 
-	 * @param settings 
-	 * @returns 
+	 * @param settings
+	 * @internal
 	 */
-	private _getCanvas( useOffscreen: boolean, width: number, height: number, settings?: CanvasRenderingContext2DSettings )
+	private _getCanvas( width: number, height: number, useOffscreen: boolean, settings?: CanvasRenderingContext2DSettings )
 	{
 		const canvas = useOffscreen ? new OffscreenCanvas( width, height ) : document.createElement( "canvas" );
 		const context = canvas.getContext( "2d", settings ) as ( CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D );

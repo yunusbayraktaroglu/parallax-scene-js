@@ -46,10 +46,11 @@ export function PronotronPointerDataProvider({ children }: { children: React.Rea
 
 			setPointerPosition({ x: pos.x, y: pos.y });
 			setPointerEasedPosition({ x: easedPosRef.current.x, y: easedPosRef.current.y });
-
+			setPointerState( pointerController.current.getState() );
+			setPointerTargetInteractable( pointerController.current.canInteract() );
+			
 			//setPointerDelta( pointerController.current.getDelta() );
-			//setPointerState( pointerController.current.getState() );
-			//setPointerTargetInteractable( pointerController.current.canInteract() );
+
 			
 			animationFrameId = requestAnimationFrame( tick );
 		};

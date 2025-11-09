@@ -41,6 +41,7 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			animator: animator.current,
 			clock: clock.current,
 			isInteractable: ( target: HTMLElement ) => {
+				// console.log( target )
 				// If target inside an <a>, <button> or .holdable return true
 				if ( target.closest( "a" ) || target.closest( "button" ) || target.closest( ".holdable" ) ){
 					return true;

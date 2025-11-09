@@ -22,10 +22,10 @@ export class ResourceController
 	private _textures = new Map<string, WebGLTexture>();
 	private _mergedImages = new Map<string, MergeResult>();
 
-	constructor( gl: ParallaxRenderingContext )
+	constructor( gl: ParallaxRenderingContext, glVersion: "1" | "2" )
 	{
 		this._maxTextureSize = gl.MAX_TEXTURE_SIZE;
-		this._textureHelper = new TextureHelper( gl );
+		this._textureHelper = new TextureHelper( gl, glVersion );
 
 		/**
 		 * @bug
@@ -35,9 +35,10 @@ export class ResourceController
 	}
 
 	/**
-	 * Creates a WebGL texture
+	 * Creates a WebGL texture with given {@link TextureOptions}
 	 * 
-	 * @param imageBitmap 
+	 * @param imageBitmap
+	 * @param options 
 	 */
 	createTexture( imageBitmap: ImageBitmap, options?: TextureOptions )
 	{

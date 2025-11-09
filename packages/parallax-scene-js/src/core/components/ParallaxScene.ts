@@ -10,7 +10,6 @@ import { BufferAttribute } from '../buffers/BufferAttribute';
 import { InterleavedBufferAttribute } from '../buffers/InterleavedBufferAttribute';
 
 import { Material } from "./Material";
-import { Camera2D } from "./Camera2D";
 
 /**
  * The settings when creating a new {@link ParallaxScene}
@@ -132,11 +131,6 @@ export class ParallaxSceneBase
 	texture: WebGLTexture;
 
 	/**
-	 * Each scene has its own camera to decide {@link Camera2D.zoom}
-	 */
-	camera: Camera2D;
-
-	/**
 	 * **Normalized** pointer position to ParallaxScene,
 	 * Scene might be at any position with some offsets in the screen. So must updated by user
 	 * 
@@ -149,32 +143,22 @@ export class ParallaxSceneBase
 	 * How to draw on canvas,
 	 * Each scene has its own resolution.
 	 * to use in `gl.viewport( x, y, w, h )` and `gl.scissor( x, y, w, h )`
+	 * 
+	 * @info
+	 * `y` have to point bottom in WebGL pixel coordinates (OpenGL's +Y-up convention)
 	 */
 	rect: Rectangle = { x: 0, y: 0, w: 0, h: 0 };
-
-	/**
-	 * Build scale with initial rect, it doesnt matter 100 or 1000,
-	 * will be adapted new rect by ratio
-	 */
-	initialRect: Rectangle = { x: 0, y: 0, w: 100, h: 100 };
 
 	constructor( settings: ParallaxSceneSettings )
 	{
 		this.id = settings.id;
 		this.settings = settings;
 
-		this.camera = new Camera2D();
+		this.geometry = this._createGeometry( settings.layers );
 		this.material = settings.material;
 		this.texture = settings.texture;
-		this.geometry = this._createGeometry( settings.layers );
-		
+
 		this.material.updateUniforms({
-			u_projection: {
-				value: this.camera.getProjectionMatrix()
-			},
-			u_pointer: {
-				value: this.pointer
-			},
 			u_image0: {
 				value: this.texture
 			},
@@ -196,6 +180,7 @@ export class ParallaxSceneBase
 	/**
 	 * Set scene rectangle for scene in canvas
 	 * @param rect 
+	 * @info `y` have to point bottom in WebGL pixel coordinates (OpenGL's +Y-up convention)
 	 */
 	setRect( newRect: Rectangle )
 	{

@@ -57,15 +57,14 @@ export const DEFAULT_MATERIAL = new Material( {
 	fragment: fragmentShader,
 	transparent: true,
 	uniforms: {
-		u_resolution: GLOBAL_UNIFORMS.u_resolution,
 		u_image0: {
 			value: null
 		},
-		u_projection: {
-			value: null
+		u_resolution: {
+			value: { x: 0, y: 0 }
 		},
 		u_pointer: {
-			value: { x: 0, y: 0 }
+			value: { x: 0.5, y: 0.5 }
 		}
 	},
 } );

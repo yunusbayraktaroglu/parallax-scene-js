@@ -5,8 +5,10 @@ import Link from "next/link";
 
 import { PronotronPointerProvider } from "./hooks/PointerProvider";
 import { PronotronPointerDataProvider } from "./hooks/PointerDataProvider";
+import { PronotronParallaxManagerProvider } from "./hooks/ParallaxManagerProvider";
 
 import { SiteSVG, GithubIcon } from "./components/SiteSVG";
+import { PointerView } from "./components/CustomPointer";
 
 export const metadata: Metadata = {
 	title: {
@@ -38,7 +40,14 @@ export default function RootLayout({ children }: { children: React.ReactNode })
 				</header> */}
 				<PronotronPointerProvider>
 					<PronotronPointerDataProvider>
-						{ children }
+						<PointerView />
+						<div className="flex w-screen h-screen">
+							<PronotronParallaxManagerProvider>
+								<div id="content" className="flex w-full h-full p-spacing-base">
+									{ children }
+								</div>
+							</PronotronParallaxManagerProvider>
+						</div>
 					</PronotronPointerDataProvider>
 				</PronotronPointerProvider>
 			</body>

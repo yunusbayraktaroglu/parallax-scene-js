@@ -1,164 +1,111 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { ParallaxManager, ParallaxScene, ParallaxSceneLayer } from "@pronotron/parallax-scene-js";
-import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
+import { type ParallaxSceneLayer, type ParallaxSceneOptions } from "@pronotron/parallax-scene-js";
 
 import { usePointerDataContext } from "./hooks/PointerDataProvider";
+import { useParallaxManagerContext } from "./hooks/ParallaxManagerProvider";
+import { useParallaxScene } from "./hooks/useParallaxScene";
 
-const prlx = { x: 1, y: 1 };
-
-const basicData: ParallaxSceneLayer[] = [
+const SCENE_01_LAYERS: ParallaxSceneLayer[] = [
 	{
 		url: "images/parallax-1.png",
 		sizeInBytes: 548864,
 		parallax: { x: 0.7, y: 1 },
-		fit: { h: 1.5 }
+		fit: { h: 1.1 }
 	},
 	{
 		url: "images/parallax-3.png",
 		sizeInBytes: 430882,
 		parallax: { x: 0.8, y: 1 },
-		fit: { h: 1.5 }
+		fit: { h: 1.1 }
 	},
 	{
 		url: "images/parallax-motor.png",
 		sizeInBytes: 425055,
 		parallax: { x: 1, y: 1 },
-		fit: { h: 1.5 }
+		fit: { h: 1.1 }
+	},
+];
+
+const SCENE_02_LAYERS: ParallaxSceneLayer[] = [
+	{
+		url: "images/parallax-1.png",
+		sizeInBytes: 548864,
+		parallax: { x: 0.7, y: 1 },
+		fit: { h: 1.1 }
+	},
+	{
+		url: "images/parallax-2.png",
+		sizeInBytes: 471647,
+		parallax: { x: 0.8, y: 1 },
+		fit: { h: 1.1 }
+	},
+	{
+		url: "images/parallax-motor.png",
+		sizeInBytes: 425055,
+		parallax: { x: 1, y: 1 },
+		fit: { h: 1.1 }
 	},
 ];
 
 export default function HomePage()
 {
-	const { pointerState, pointerTargetInteractable, pointerEasedPosition } = usePointerDataContext();
-
-	const PARALLAX_MANAGER = useRef<ParallaxManager>( null );
-
-	const canvasRef = useRef<HTMLCanvasElement>( null );
-	const sceneRef = useRef<HTMLDivElement>( null );
-
-	const [ scene, setScene ] = useState<ParallaxScene>();
-	const [ loaded, setLoaded ] = useState( 0 );
-
-	useEffect(() => {
-
-		if ( PARALLAX_MANAGER.current || ! canvasRef.current ) return;
-
-		// 1. CREATE PARALLAX MANAGER
-		PARALLAX_MANAGER.current = new ParallaxManager( {
-			canvas: canvasRef.current!,
-			attributes: {
-				alpha: true,
-				depth: false,
-				stencil: false,
-				premultipliedAlpha: false
-			}
-		} );
-
-		// 2. ADD OBSERVER TO CANVAS
-		const ResizeObserver = window.ResizeObserver || Polyfill;
-		const ro = new ResizeObserver( ( entries, observer ) => {
-			const { clientWidth, clientHeight } = canvasRef.current!;
-			PARALLAX_MANAGER.current!.updateResolution( clientWidth, clientHeight );
-		} );
-		ro.observe( canvasRef.current );
-
-		// 3. LOAD SCENE
-		const loadScene = async () => {
-			try {
-				const PARALLAX_SCENE = await PARALLAX_MANAGER.current!.initScene( basicData, ( percent: number ) => {
-					setLoaded( percent );
-					//console.log( `Loaded: %${ percent }` );
-				} );
-				setScene( PARALLAX_SCENE );
-			} catch( error ){
-				throw error;
-			}
-		};
-
-		loadScene();
-
-		return () => ro.unobserve( canvasRef.current! );
-
-	}, []);
+	const { parallaxController } = useParallaxManagerContext();
 
 	/**
 	 * Start render scene after load
 	 */
-	useEffect(() => {
+	useEffect( () => {
 
-		if ( scene ){
+		let animationFrameId = 0;
 
-			let animationFrameId = 0;
-
-			const tick = () => {
-				PARALLAX_MANAGER.current!.render();
-				animationFrameId = requestAnimationFrame( tick );
-			};
-
+		const tick = () => {
+			parallaxController.render();
 			animationFrameId = requestAnimationFrame( tick );
+		};
 
-		}
+		animationFrameId = requestAnimationFrame( tick );
 
-	}, [ scene ])
+		return () => cancelAnimationFrame( animationFrameId );
 
-	useEffect(() => {
-		if ( ! canvasRef.current ) return;
-		const { clientWidth, clientHeight } = canvasRef.current;
-		scene?.setPointer( pointerEasedPosition.x / clientWidth, pointerEasedPosition.y / clientHeight );
-	}, [ pointerEasedPosition ]);
+	}, [] );
+
+	return (
+		<div className="grid grid-cols-2 grid-rows-1 gap-spacing-xs w-full h-full">
+			<ParallaxScene id={ "#0" } layers={ SCENE_01_LAYERS } />
+			<ParallaxScene id={ "#1" } layers={ SCENE_02_LAYERS } />
+		</div>
+	);
+}
+
+
+function ParallaxScene({ id, layers }: ParallaxSceneOptions )
+{
+	const sceneRef = useRef<HTMLDivElement>( null ! );
+
+	const { scene, sceneRect, loaded } = useParallaxScene( { id, layers }, sceneRef );
+	const { pointerEasedPosition } = usePointerDataContext();
 
 	useEffect(() => {
 
 		if ( ! scene ) return;
 
-		const ResizeObserver = window.ResizeObserver || Polyfill;
-		const ro = new ResizeObserver( ( entries, observer ) => {
-			
-			const rect = sceneRef.current!.getBoundingClientRect();
-			const width  = rect.right - rect.left;
-			const height = rect.bottom - rect.top;
-			const left   = rect.left;
-			const bottom = canvasRef.current!.clientHeight - rect.bottom;
-			
-			const { clientWidth, clientHeight } = canvasRef.current!;
+		let x = ( pointerEasedPosition.x - sceneRect.left ) / sceneRect.width;
+		let y = ( pointerEasedPosition.y - sceneRect.top ) / sceneRect.height;
+		
+		x = Math.min( Math.max( x, 0 ), 1 );
+		y = Math.min( Math.max( y, 0 ), 1 );
 
-			scene.setRect( { x: left, y: bottom, w: width, h: height } );
-			//scene.setRect( { x: 0, y: 0, w: clientWidth, h: clientHeight } );
-		} );
-		ro.observe( canvasRef.current! );
+		scene.setPointer( x, y );
 
-
-		// // 2. ADD OBSERVER TO SCENE
-		// const ResizeObserver = window.ResizeObserver || Polyfill;
-		// const ro = new ResizeObserver( () => {
-
-		// 	const rect = sceneRef.current!.getBoundingClientRect();
-
-		// 	const width  = rect.right - rect.left;
-		// 	const height = rect.bottom - rect.top;
-		// 	const left   = rect.left;
-		// 	const bottom = canvasRef.current!.clientHeight - rect.bottom;
-
-		// 	scene.setRect( { x: left, y: bottom, w: width, h: height } );
-		// } );
-
-		// ro.observe( sceneRef.current! );
-
-		return () => ro.unobserve( canvasRef.current! );
-
-	}, [ scene ]);
+	}, [ sceneRect, pointerEasedPosition ]);
 
 	return (
-		<div className="flex w-screen h-screen">
-			<canvas ref={ canvasRef } className="flex w-full h-full absolute left-0 top-0 z-[-1]" />
-			<div id="content" className="m-3">
-				<div ref={ sceneRef } className="w-[500px] h-[500px] border"></div>
-				<div className="label">
-					<h1 className="text-white">Parallax Scene JS - 01</h1>
-					<h1 className="text-black">{ loaded }</h1>
-				</div>
+		<div ref={ sceneRef } className="border">
+			<div className="label p-3">
+				<h1 className="text-red">Scene { id }</h1>
+				<h1 className="text-black">{ loaded }</h1>
 			</div>
 		</div>
 	);

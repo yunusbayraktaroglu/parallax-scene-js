@@ -110,7 +110,7 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 }
 
-body.custom-cursor * {
+body * {
 	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23000000" width="6px" height="6px" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.5"/></svg>') 3 3, auto !important;
 }
 
@@ -197,7 +197,7 @@ body.custom-cursor * {
 		--scale: 1;
 		--transition-duration: 0.4s;
 		--background-color: transparent;
-		--border-color: black;
+		--border-color: white;
 		--animation: none;
 		background-color: transparent;
 		position: fixed;
@@ -207,13 +207,14 @@ body.custom-cursor * {
 		pointer-events: none;
 		touch-action: none;
 		user-select: none;
+		mix-blend-mode: difference;
 		z-index: 9999;
 	}
 
 	.pointer-inside {
 		animation: var( --animation );
 		background-color: var( --background-color );
-		border: 1px solid var( --border-color );
+		border: 2px solid var( --border-color );
 		overflow: hidden;
 		border-radius: 50%;
 		height: var( --cursor-size );

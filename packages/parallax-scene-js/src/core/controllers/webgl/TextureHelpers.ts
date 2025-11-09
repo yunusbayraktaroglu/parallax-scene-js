@@ -33,7 +33,7 @@ const defaultOptions = {
 	internalFormat: GL_RGBA,
 	format: GL_RGBA,
 	type: GL_UNSIGNED_BYTE,
-	wrap: GL_REPEAT,
+	wrap: GL_REPEAT, // WebGL 1 & if not npot -> GL.CLAMP_TO_EDGE
 	wrapS: GL_REPEAT,
 	wrapT: GL_REPEAT,
 	wrapR: GL_REPEAT,
@@ -202,13 +202,22 @@ export interface TextureOptions
 export class TextureHelper
 {
 	private _gl: ParallaxRenderingContext;
+	private _version: "1" | "2";
 	
-	constructor( gl: ParallaxRenderingContext )
+	constructor( gl: ParallaxRenderingContext, version: "1" | "2" )
 	{
 		this._gl = gl;
+		this._version = version;
 	}
 
-	createTexture( image: ImageBitmap, options: TextureOptions = {} )
+	/**
+	 * Creates WebGL texture with given ImageBitmap and options
+	 * {@link defaultOptions}
+	 * 
+	 * @param image ImageBitmap
+	 * @param options Texture options
+	 */
+	createTexture( image: ImageBitmap, options: TextureOptions = {} ): WebGLTexture
 	{
 		const gl = this._gl;
 
@@ -226,7 +235,7 @@ export class TextureHelper
 		const texture = gl.createTexture();
 		gl.bindTexture( target, texture );
 
-		// 1. Set WebGL pixel store parameters
+		// Set WebGL pixel store parameters
 		this._setPixelStore( overridenOptions );
 
 		gl.texImage2D( target, level, internalFormat, format, type, image );
@@ -240,10 +249,9 @@ export class TextureHelper
 	/**
 	 * Sets WebGL pixel store parameters from an options object.
 	 *
-	 * @param gl The WebGL rendering context.
 	 * @param options An object with texture parameters.
 	 */
-	private _setPixelStore( options: TextureOptions )
+	private _setPixelStore( options: TextureOptions ): void
 	{
 		const gl = this._gl;
 
@@ -273,7 +281,7 @@ export class TextureHelper
 	 * @param target The texture target (e.g., gl.TEXTURE_2D).
 	 * @param options An object with texture parameters.
 	 */
-	private _setTextureParameters( target: GLenum, options: TextureOptions )
+	private _setTextureParameters( target: GLenum, options: TextureOptions ): void
 	{
 		const gl = this._gl;
 
@@ -358,17 +366,15 @@ export class TextureHelper
 		}
 	}
 
-	private _pixelStorei( pname: number, param: number | boolean )
+	private _pixelStorei( pname: number, param: number | boolean ): void
 	{
 		this._gl.pixelStorei( pname, param );
 	}
-
-	private _texParameteri( target: number, pname: number, param: number )
+	private _texParameteri( target: number, pname: number, param: number ): void
 	{
 		this._gl.texParameteri( target, pname, param );
 	}
-	
-	private _texParameterf( target: number, pname: number, param: number )
+	private _texParameterf( target: number, pname: number, param: number ): void
 	{
 		this._gl.texParameterf( target, pname, param );
 	}
