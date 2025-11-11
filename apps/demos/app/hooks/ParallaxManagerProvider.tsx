@@ -1,0 +1,69 @@
+"use client";
+
+import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
+import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
+import { ParallaxManager, createParallaxManager } from "@pronotron/parallax-scene-js";
+
+interface PointerContextProps {
+	parallaxController: ParallaxManager;
+};
+
+const ParallaxManagerContext = createContext<PointerContextProps | undefined>( undefined );
+
+export const useParallaxManagerContext = () => {
+	const context = useContext( ParallaxManagerContext );
+	if ( ! context ){
+	  	throw new Error( "useParallaxManagerContext must be used within a PronotronParallaxManagerProvider" );
+	}
+	return context;
+};
+
+export function PronotronParallaxManagerProvider({ children }: { children: React.ReactNode })
+{
+	const canvasRef = useRef<HTMLCanvasElement>( null );
+	const [ parallaxController, setParallaxController ] = useState<ParallaxManager | null>( null );
+
+	useLayoutEffect( () => {
+
+		if ( ! canvasRef.current ) return;
+
+		const controller = createParallaxManager( {
+			canvas: canvasRef.current!,
+			version: "2",
+			attributes: {
+				alpha: false,
+				depth: false,
+				stencil: false,
+				premultipliedAlpha: false
+			},
+			loader: "advanced",
+		} );
+
+		const ResizeObserver = window.ResizeObserver || Polyfill;
+
+		const ro = new ResizeObserver( ( entries, observer ) => {
+			const { clientWidth, clientHeight } = canvasRef.current!;
+			controller.updateResolution( clientWidth, clientHeight );
+		} );
+
+		ro.observe( canvasRef.current );
+
+		setParallaxController( controller );
+
+		return () => {
+			ro.disconnect();
+		};
+		
+	}, [] );
+
+	return (
+		<>
+			<canvas ref={ canvasRef } className="flex w-full h-full absolute left-0 top-0 z-[-1]" />
+			{ parallaxController && (
+				<ParallaxManagerContext.Provider value={{ parallaxController }}>
+					{ children	}
+				</ParallaxManagerContext.Provider>
+			) }
+		</>
+	);
+}

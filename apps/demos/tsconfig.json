@@ -1,0 +1,24 @@
+{
+	"exclude": [
+		"node_modules"
+	],
+	"extends": "@pronotron/config-ts/nextjs.json",
+	"compilerOptions": {
+		"outDir": "dist",
+		"incremental": true,
+		"plugins": [
+			{
+				"name": "next"
+			}
+		],
+		"paths": {
+			"@/*": [ "./*" ]
+		},
+	},		
+	"include": [
+		"**/*.ts",
+		"**/*.tsx",
+		"next.config.js",
+		".next/types/**/*.ts"
+	]
+}

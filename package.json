@@ -1,32 +1,36 @@
 {
 	"name": "parallax-scene-js",
-	"version": "2.0.0",
-	"private": true,
-	"description": "Raw WebGL parallax scenes with 1 draw call.",
+	"description": "Create raw WebGL parallax scenes with only 1 draw call.",
 	"author": "Yunus Bayraktaroglu",
-	"repository": "github:yunusbayraktaroglu/parallax-scene-js",
-	"bugs": "https://github.com/yunusbayraktaroglu/parallax-scene-js/issues",
+	"private": true,
 	"license": "MIT",
-	"keywords": [
-		"parallax",
-		"webgl"
-	],
-	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"build": "tsc && vite build",
-		"preview": "vite preview",
-		"lint": "eslint \"src/**/*.ts\"",
-		"lint-fix": "eslint \"src/**/*.ts\" --fix",
-		"release": "node node.versioning.js"
+		"build": "turbo build",
+		"build:packages": "turbo build --filter=./packages/*",
+		"build:demos": "turbo build --filter=@pronotron/demos",
+		"build:docs": "turbo docs --filter=@pronotron/docs",
+		"dev": "turbo dev",
+		"test": "turbo test --filter=./packages/*",
+		"test:watch": "turbo test:watch --filter=./packages/*",
+		"lint": "turbo lint --filter=./packages/*",
+		"clean": "turbo clean && rm -rf node_modules",
+		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"release": "turbo build --filter=./packages/* && changeset publish"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.57.1",
-		"@typescript-eslint/parser": "^5.57.1",
-		"eslint": "^8.37.0",
-		"terser": "^5.16.8",
-		"typescript": "^4.9.3",
-		"vite": "^4.0.0",
-		"vite-plugin-glsl": "^1.1.2"
-	}
+		"@changesets/cli": "^2.29.7",
+		"eslint": "^9.38.0",
+		"prettier": "^3.6.2",
+		"turbo": "^2.5.8"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "npm@10.2.4",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	]
 }

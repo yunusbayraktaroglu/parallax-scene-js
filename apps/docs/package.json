@@ -1,0 +1,16 @@
+{
+	"name": "@pronotron/docs",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"docs": "typedoc",
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next"
+	},
+	"devDependencies": {
+		"typedoc": "^0.28.14",
+		"@pronotron/config-eslint": "*",
+		"@pronotron/config-ts": "*",
+		"@types/node": "^20.11.24",
+		"typescript": "^5.9.3"
+	}
+}
