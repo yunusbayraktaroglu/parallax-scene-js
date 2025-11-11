@@ -55,20 +55,8 @@ export class GLController
 	constructor({ canvas, version = "2", attributes = {} }: GetContextOptions )
 	{
 		this.version = version;
-		this.canvas = canvas ? canvas : this._createCanvasElement();
+		this.canvas = canvas;
 		this.gl = this._getGL( { ...DEFAULT_ATTRIBUTES, ...attributes } );
-	}
-
-	/**
-	 * Creates and returns a new HTMLCanvasElement.
-	 * 
-	 * @returns A new HTMLCanvasElement instance.
-	 * @internal
-	 */
-	private _createCanvasElement(): HTMLCanvasElement
-	{
-		const canvas = document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' ) as HTMLCanvasElement;
-		return canvas;
 	}
 
 	/**
@@ -129,9 +117,7 @@ export class GLController
 			throw error;
 
 		}
-
 	}
-
 
 	/**
 	 * Attempts to retrieve a WebGL rendering context using the provided names and attributes.

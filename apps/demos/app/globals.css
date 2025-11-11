@@ -111,7 +111,7 @@ body {
 }
 
 body * {
-	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23000000" width="6px" height="6px" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.5"/></svg>') 3 3, auto !important;
+	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23FFFFFF" width="6px" height="6px" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.5"/></svg>') 3 3, auto !important;
 }
 
 
@@ -192,7 +192,7 @@ body * {
 	}
 
 	.pointer {
-		--cursor-size: max( 25px, calc( 100vw / 40 ) );
+		--cursor-size: max( 50px, calc( 100vw / 30 ) );
 		--cursor-half-size: calc( var( --cursor-size ) / 2 );
 		--scale: 1;
 		--transition-duration: 0.4s;

@@ -4,15 +4,6 @@ import { Loader } from "../core/Loader";
  * Handles and keeps track of loaded and pending data. A default global
  * instance of this class is created and used by loaders if not supplied
  * manually.
- *
- * In general that should be sufficient, however there are times when it can
- * be useful to have separate loaders - for example if you want to show
- * separate loading bars for objects and textures.
- *
- * ```js
- * const manager = new LoadingManager();
- * manager.onLoad = () => console.log( 'Loading complete!' );
- * ```
  * 
  * Useful when
  * - Loading critical assets without tracking bytes.

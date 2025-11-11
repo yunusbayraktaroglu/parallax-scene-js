@@ -56,10 +56,11 @@ export default function RootLayout({ children }: { children: React.ReactNode })
 function Header()
 {
 	return (
-		<Expandable title="Examples" expand={ false } className="fixed p-spacing-sm min-w-[200px] bg-white right-0 m-spacing-xs rounded-xl opacity-50 hover:opacity-100">
+		<Expandable title="Examples" expand={ false } className="fixed min-w-[150px] bg-white left-0 bottom-0 m-spacing-xs rounded-xl opacity-50 hover:opacity-100 overflow-hidden">
 			<header className="container">
-				<nav className="flex flex-col -mx-spacing-sm">
+				<nav className="flex flex-col bg-slate-300 divide-y divide-y-reverse">
 					<Link href="/" className="p-spacing-sm hover:underline">Home</Link>
+					<Link href="/multiple-scenes" className="p-spacing-sm hover:underline">Multiple Scenes</Link>
 					<Link href="/limits" className="p-spacing-sm hover:underline">Limits</Link>
 					<a className="ml-auto flex flex-row align-center p-spacing-sm text-slate-500 fill-slate-500 hover:fill-black hover:text-black transition-colors" target="_blank" href="https://github.com/yunusbayraktaroglu/parallax-scene-js">
 						Github <GithubIcon fill="inherit" stroke="none" className="ml-1" />

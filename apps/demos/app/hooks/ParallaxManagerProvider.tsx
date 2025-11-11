@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
-import { ParallaxManager } from "@pronotron/parallax-scene-js";
+import { ParallaxManager, createParallaxManager } from "@pronotron/parallax-scene-js";
 
 interface PointerContextProps {
 	parallaxController: ParallaxManager;
@@ -27,14 +27,16 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 
 		if ( ! canvasRef.current ) return;
 
-		const controller = new ParallaxManager( {
+		const controller = createParallaxManager( {
 			canvas: canvasRef.current!,
+			version: "2",
 			attributes: {
-				alpha: true,
+				alpha: false,
 				depth: false,
 				stencil: false,
 				premultipliedAlpha: false
-			}
+			},
+			loader: "advanced",
 		} );
 
 		const ResizeObserver = window.ResizeObserver || Polyfill;

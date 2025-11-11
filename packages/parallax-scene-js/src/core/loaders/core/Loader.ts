@@ -3,8 +3,8 @@
  * 
  * - If images are cross-origin and the server doesn’t expose headers with CORS, 
  * the browser will give you an opaque response and you can’t read Content-Length in JS. 
- * In that case a manifest (or server-side header exposure) 
- * is the only practical way to know sizes in-browser without extra server coordination.
+ * In that case a manifest (or server-side header exposure) is the only practical way 
+ * to know sizes in-browser without extra server coordination.
  * 
  * - Servers/CDNs and chunked/compressed transfers: 
  * Some responses use Transfer-Encoding: chunked or are compressed; Content-Length might be absent or report compressed bytes. 

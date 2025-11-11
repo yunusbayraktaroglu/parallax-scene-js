@@ -172,11 +172,11 @@ export class ParallaxSceneBase
 		this.material = settings.material;
 		this.texture = settings.texture;
 
-		this.material.updateUniforms({
+		this.material.updateUniforms( {
 			u_texture: {
 				value: this.texture
 			},
-		});
+		} );
 	}
 
 	/**

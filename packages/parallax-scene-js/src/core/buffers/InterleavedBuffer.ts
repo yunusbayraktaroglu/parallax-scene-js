@@ -12,12 +12,7 @@ export class InterleavedBuffer
 	/**
 	 * A version number, incremented every time the `needsUpdate` is set to `true`.
 	 */
-	version = 0;
-
-	/**
-	 * This flag can be used for type testing.
-	 */
-	readonly isInterleavedBuffer = true;
+	version: number = 0;
 
 	/**
 	 * A typed array with a shared buffer storing attribute data.
@@ -82,7 +77,7 @@ export class InterleavedBuffer
 	 * A callback function that is executed after the renderer has transferred the attribute array
 	 * data to the GPU.
 	 */
-	onUploadCallback() {}
+	onUploadCallback(){}
 
 	/**
 	 * Sets the given array data in the interleaved buffer.

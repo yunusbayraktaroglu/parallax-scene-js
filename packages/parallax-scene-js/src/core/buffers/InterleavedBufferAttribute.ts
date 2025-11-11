@@ -9,11 +9,6 @@ import { BufferBase } from "./BufferBase";
 export class InterleavedBufferAttribute extends BufferBase
 {
 	/**
-	 * This flag can be used for type testing.
-	 */
-	readonly isInterleavedBufferAttribute = true;
-
-	/**
 	 * The name of the buffer attribute.
 	 * @defaultValue ''
 	 */

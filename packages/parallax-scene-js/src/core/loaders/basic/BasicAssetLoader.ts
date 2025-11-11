@@ -40,8 +40,8 @@ export class BasicAssetLoader
 			 * @todo
 			 * Each request batch may use its own loading manager
 			 */
-			const manager = new LoadingManager();
-			manager.onProgress = ( url, loadedItem, totalItem ) => onProgress?.( ( loadedItem / totalItem ) * 100 );
+			//const manager = new LoadingManager();
+			//manager.onProgress = ( url, loadedItem, totalItem ) => onProgress?.( ( loadedItem / totalItem ) * 100 );
 			
 			// Create async download tasks for each image
 			const layerPromises = images.map( async ( image ) => 

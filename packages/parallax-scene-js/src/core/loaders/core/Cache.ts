@@ -4,7 +4,7 @@ export const Cache = {
 	/**
 	 * Whether caching is enabled or not.
 	 */
-	enabled: false as boolean,
+	enabled: true as boolean,
 
 	/**
 	 * A dictionary that holds cached files.

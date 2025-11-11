@@ -2,7 +2,7 @@
 
 [![NPM Package][npm]][npm-url]
 [![Build Size][build-size]][build-size-url]
-[![Codecov][codecov-pointer]][codecov-url-pointer]
+[![Codecov][codecov-parallax-scene-js]][codecov-parallax-scene-js-url]
 
 Create **raw WebGL** parallax scenes with only **1 draw call**. The aim of the project is to create parallax scenes can run **smoothly even very low-end mobile devices**.
 
@@ -19,35 +19,44 @@ Live: [https://yunusbayraktaroglu.github.io/parallax-scene-js/](https://yunusbay
 
 ### Setup
 ```typescript
-import { ParallaxScene, AdvancedAssetLoader, BasicAssetLoader } from "@pronotron/parallax-scene-js";
+import { type ParallaxSceneOptions, createParallaxManager } from "@pronotron/parallax-scene-js";
 
-const MANAGER = new ParallaxScene({
+const MANAGER = createParallaxManager( {
 	canvas: HTMLCanvasElement,
+	version: "2",
 	attributes: {
-		alpha: true,
-		...
+		alpha: false,
+		depth: false,
+		stencil: false,
+		premultipliedAlpha: false
 	},
-	// Basic or Advanced loader. Advanced supports onProgress event
-	loader: AdvancedAssetLoader
-});
+	/**
+	 * - advanced: Uses AdvancedAssetLoader, supports ProgressEvent and displays percentage-based progress.
+	 * - basic: Uses BasicAssetLoader, uses item count–based progress.
+	 */
+	loader: "advanced",
+} );
 
-const SCENE_SETTINGS = [
-    // The first object in the array represents the bottom-most layer
-    { 
-        url: 'images/parallax-1.png',
-        fit: {
-            h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
-        },
-        parallax: {
-            x: 0.3,
-            y: 1 // Move the layer without it moving out of the canvas.
-        },
-        translate: {
-            x: -0.25, // Position the layer respective to its size
-        }
-    },
-    items...
-];
+const SCENE_SETTINGS: ParallaxSceneOptions = {
+	id: "my_parallax_scene",
+	layers: [
+		// The first object in the array represents the bottom-most layer
+		{ 
+			url: 'images/parallax-1.png',
+			fit: {
+				h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
+			},
+			parallax: {
+				x: 0.3,
+				y: 1 // Move the layer without it moving out of the canvas.
+			},
+			translate: {
+				x: -0.25, // Position the layer respective to its size
+			}
+		},
+		items...
+	];
+} ;
 
 const PARALLAX_SCENE = await MANAGER.initScene( SCENE_SETTINGS );
 
@@ -55,8 +64,6 @@ const PARALLAX_SCENE = await MANAGER.initScene( SCENE_SETTINGS );
 MANAGER.renderScene( PARALLAX_SCENE );
 ```
 
-<br/><br/>
-https://github.com/yunusbayraktaroglu/parallax-scene-js/assets/25721593/03b2734f-f50b-41c9-a172-b1118c52e2e9
 <br/><br/>
 
 ## Project philosophy
@@ -74,5 +81,5 @@ See [CONTRIBUTING ↗](.github/CONTRIBUTING.md)
 [npm-url]: https://www.npmjs.com/package/@pronotron/parallax-scene-js
 [build-size]: https://badgen.net/bundlephobia/minzip/@pronotron/parallax-scene-js
 [build-size-url]: https://bundlephobia.com/result?p=@pronotron/parallax-scene-js
-[codecov-pointer]: https://codecov.io/gh/yunusbayraktaroglu/parallax-scene-js/branch/main/graph/badge.svg
-[codecov-url-pointer]: https://app.codecov.io/gh/yunusbayraktaroglu/parallax-scene-js
+[codecov-parallax-scene-js]: https://codecov.io/gh/yunusbayraktaroglu/parallax-scene-js/branch/main/graph/badge.svg
+[codecov-parallax-scene-js-url]: https://app.codecov.io/gh/yunusbayraktaroglu/parallax-scene-js

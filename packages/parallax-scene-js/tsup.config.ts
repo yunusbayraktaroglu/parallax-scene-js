@@ -21,7 +21,7 @@ export default defineConfig({
 		mangle: {
 			properties: {
 				regex: /^_/,
-			  },
+			},
 		},
 	},
 	esbuildPlugins: [ glslMinifierPlugin ]

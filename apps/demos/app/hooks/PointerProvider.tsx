@@ -14,6 +14,7 @@ export const defaultPointerSettings = {
 
 interface PointerContextProps {
 	pointerController: React.RefObject<TouchController | MouseController>;
+	animatorRef: React.RefObject<PronotronAnimator>;
 };
 
 const PointerContext = createContext<PointerContextProps | undefined>( undefined );
@@ -28,7 +29,7 @@ export const usePointerContext = () => {
 
 export function PronotronPointerProvider({ children }: { children: React.ReactNode })
 {
-	const { pointerTarget, setPointerTarget } = usePointerTargetContext();
+	//const { pointerTarget, setPointerTarget } = usePointerTargetContext();
 
 	const clock = useRef( new PronotronClock() );
 	const animator = useRef( new PronotronAnimator( clock.current ) );
@@ -47,7 +48,7 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			clock: clock.current,
 			isInteractable: ( target: HTMLElement ) => {
 
-				setPointerTarget( target.closest( ".parallaxScene" ) as HTMLElement );
+				//setPointerTarget( target.closest( ".parallaxScene" ) as HTMLElement );
 
 				// If target inside an <a>, <button> or .holdable return true
 				if ( target.closest( "a" ) || target.closest( "button" ) || target.closest( ".holdable" ) ){
@@ -113,23 +114,23 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			console.log( "HOLD-END", event );
 		};
 		const tapHandler = ( event: CustomEvent ) => {
-			//console.log( "TAP", event );
+			console.log( "TAP", event );
 		};
 
 		window.document.body.addEventListener( "hold", holdHandler as EventListener );
 		window.document.body.addEventListener( "holdend", holdendHandler as EventListener );
-		window.document.body.addEventListener( "tap", tapHandler as EventListener );
+		//window.document.body.addEventListener( "tap", tapHandler as EventListener );
 
 		return () => {
 			window.document.body.removeEventListener( "hold", holdHandler as EventListener );
 			window.document.body.removeEventListener( "holdend", holdendHandler as EventListener );
-			window.document.body.removeEventListener( "tap", tapHandler as EventListener );
+			//window.document.body.removeEventListener( "tap", tapHandler as EventListener );
 		}
 
 	}, [] );
 
 	return (
-		<PointerContext.Provider value={{ pointerController }}>
+		<PointerContext.Provider value={{ pointerController, animatorRef: animator }}>
 			{ children }
 		</PointerContext.Provider>
 	);

@@ -186,114 +186,74 @@ export class BufferAttribute extends BufferBase
 }
 
 
-
-
-class Int8BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Int8BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Int8Array( array ), itemSize );
-
 	}
-
 }
 
-class Uint8BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Uint8BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Uint8Array( array ), itemSize );
-
 	}
-
 }
 
-class Uint8ClampedBufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Uint8ClampedBufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Uint8ClampedArray( array ), itemSize );
-
 	}
-
 }
 
-class Int16BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Int16BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Int16Array( array ), itemSize );
-
 	}
-
 }
 
-class Uint16BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Uint16BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Uint16Array( array ), itemSize );
-
 	}
-
 }
 
-class Int32BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Int32BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Int32Array( array ), itemSize );
-
 	}
-
 }
 
-class Uint32BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Uint32BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Uint32Array( array ), itemSize );
-
 	}
-
 }
 
-
-
-
-class Float32BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Float32BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Float32Array( array ), itemSize );
-
 	}
-
 }
 
-
-
-class Float64BufferAttribute extends BufferAttribute {
-
-	constructor( array: Array<number>, itemSize: number ){
-
+export class Float64BufferAttribute extends BufferAttribute
+{
+	constructor( array: Array<number>, itemSize: number )
+	{
 		super( new Float64Array( array ), itemSize );
-
 	}
-
 }
-
-
-
-
-export {
-	Float64BufferAttribute,
-	Float32BufferAttribute,
-	Uint32BufferAttribute,
-	Int32BufferAttribute,
-	Uint16BufferAttribute,
-	Int16BufferAttribute,
-	Uint8ClampedBufferAttribute,
-	Uint8BufferAttribute,
-	Int8BufferAttribute,
-};

@@ -97,7 +97,7 @@ export class ParallaxManager
 			// Check if the scene already exists in the manager
 			if ( this.scenes.has( id ) ){
 
-				console.log( `Scene: '${ id }' is exist` );
+				//console.log( `Scene: '${ id }' is exist` );
 
 				const sceneCache = this.scenes.get( id )!;
 				sceneCache.active = true;
@@ -204,7 +204,7 @@ export class ParallaxManager
 		// Remove scene reference from manager
 		this.scenes.delete( scene.id );
 
-		console.warn( `Scene '${ scene.id }' disposed.`)
+		console.warn( `Scene '${ scene.id }' disposed.` );
 	}
 
 	/**

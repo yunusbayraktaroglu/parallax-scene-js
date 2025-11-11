@@ -22,7 +22,8 @@
 	"homepage": "https://yunusbayraktaroglu.github.io/parallax-scene-js/",
 	"keywords": [
 		"WebGL",
-		"parallax"
+		"parallax",
+		"UI"
 	],
 	"scripts": {
 		"test": "jest",
@@ -30,7 +31,7 @@
 		"build": "tsup src/index.ts --format esm,cjs --dts --minify terser",
 		"dev": "tsup src/index.ts --format esm,cjs --dts --watch ",
 		"lint": "eslint .",
-		"lint:fix": "eslint . --max-warnings 0 --fix",
+		"lint:fix": "eslint ./tests/* --max-warnings 0 --fix",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"devDependencies": {
