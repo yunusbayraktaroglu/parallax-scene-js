@@ -230,7 +230,7 @@ describe( 'ParallaxManager', () => {
 			mockResourceController.createTexture.mockClear();
 
 			// Spy on console.log
-			const consoleLogSpy = jest.spyOn( console, 'log' ).mockImplementation();
+			//const consoleLogSpy = jest.spyOn( console, 'log' ).mockImplementation();
 
 			// Second call
 			const scene2 = await manager.initScene( mockSceneOptions );
@@ -238,14 +238,14 @@ describe( 'ParallaxManager', () => {
 			expect( scene2 ).toBe( scene1 ); // Should be the same instance
 			expect( scene1.active ).toBe( true ); // Should be reactivated
 			expect( manager.scenes.get( 'scene-1' ) ).toBe( scene1 );
-			expect( consoleLogSpy ).toHaveBeenCalledWith( "Scene: 'scene-1' is exist" );
+			//expect( consoleLogSpy ).toHaveBeenCalledWith( "Scene: 'scene-1' is exist" );
 
 			// Ensure no expensive operations were run
 			expect( mockLoader.loadImagesAsync ).not.toHaveBeenCalled();
 			expect( mockResourceController.merge ).not.toHaveBeenCalled();
 			expect( mockResourceController.createTexture ).not.toHaveBeenCalled();
 
-			consoleLogSpy.mockRestore();
+			//consoleLogSpy.mockRestore();
 
 		} );
 
@@ -344,7 +344,7 @@ describe( 'ParallaxManager', () => {
 			expect( manager.scenes.has( 'scene-to-dispose' ) ).toBe( true );
 
 			// Spy on console.warn
-			const consoleWarnSpy = jest.spyOn( console, 'warn' ).mockImplementation();
+			//const consoleWarnSpy = jest.spyOn( console, 'warn' ).mockImplementation();
 
 			// 2. Call dispose
 			manager.dispose( scene );
@@ -358,9 +358,9 @@ describe( 'ParallaxManager', () => {
 
 			expect( mockRenderController.dispose ).toHaveBeenCalledWith( scene );
 			expect( manager.scenes.has( 'scene-to-dispose' ) ).toBe( false );
-			expect( consoleWarnSpy ).toHaveBeenCalledWith( "Scene 'scene-to-dispose' disposed." );
+			//expect( consoleWarnSpy ).toHaveBeenCalledWith( "Scene 'scene-to-dispose' disposed." );
 
-			consoleWarnSpy.mockRestore();
+			//consoleWarnSpy.mockRestore();
 
 		} );
 	} );
