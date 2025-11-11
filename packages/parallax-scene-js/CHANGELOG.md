@@ -1,7 +1,10 @@
----
-"@pronotron/parallax-scene-js": major
----
+# @pronotron/parallax-scene-js
 
+## 3.0.0
+
+### Major Changes
+
+1a10aee: 
 - Added NPM support. The library is now installable via npm.
 - Implemented VAO (Vertex Array Object) for improved WebGL performance and cleaner attribute binding.
 - Added multi-scene rendering. Multiple parallax scenes can now render on the same canvas.
