@@ -1,21 +1,46 @@
 import { BaseTexturePacker, ImageSource, PackResult, AtlasResult } from "./BaseTexturePacker";
 
+/**
+ * Represents a single rectangular node within the binary tree packing structure.
+ * Each node may contain a placed image or act as a subdivision of the texture space.
+ */
 type ImageNode = Rectangle & {
+	/**
+	 * Whether this node is already occupied by an image.
+	 */
 	used?: boolean;
+	/**
+	 * Reference to the node on the right side of this one.
+	 */
 	right?: ImageNode | null;
+	/**
+	 * Reference to the node below this one.
+	 */
 	down?: ImageNode | null;
 };
 
 /**
- * Binary Tree 2D Texture packer algorithm
+ * Implements a Binary Tree–based 2D texture packing algorithm.
+ * Efficient for packing a set of rectangles into a single texture without overlap.
  * 
  * @see https://jvernay.fr/en/blog/skyline-2d-packer/implementation
  * @see https://www.david-colson.com/2020/03/10/exploring-rect-packing.html
  */
 export class BinaryTreeTexturePacker extends BaseTexturePacker
 {
-	private root: ImageNode | null = null;
+	/**
+	 * Root node of the binary tree representing the packed texture space.
+	 * @internal
+	 */
+	private _root: ImageNode | null = null;
 
+	/**
+	 * Packs a list of image sources into a single atlas using a binary tree method.
+	 * 
+	 * @param images - Array of images to be packed.
+	 * @returns The packing result, including normalized atlas coordinates and total texture size.
+	 * @throws Error if the input array is empty or packing fails for any image.
+	 */
 	pack( images: ImageSource[] ): PackResult
 	{
 		if ( ! Array.isArray( images ) || images.length === 0 ){
@@ -31,7 +56,7 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 		// initialize root with the first (largest) image size
 		const first = items[ 0 ].source;
 
-		this.root = { 
+		this._root = { 
 			x: 0, 
 			y: 0, 
 			w: first.width, 
@@ -51,7 +76,7 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 			const h = bmp.height;
 
 			// find a node that fits
-			const node = this._findNode( this.root, w, h );
+			const node = this._findNode( this._root, w, h );
 
 			if ( node ){
 				fits[ i ] = this._splitNode( node, w, h );
@@ -81,8 +106,8 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 		} );
 
 		const canvasSize = { 
-			w: this.root.w, 
-			h: this.root.h 
+			w: this._root.w, 
+			h: this._root.h 
 		};
 
 		// Will be used in WebGL, normalization required
@@ -105,9 +130,15 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 	}
 
 	/**
-	* Iterative search for a free node that can fit the requested size.
-	* Avoids recursive calls to reduce call overhead.
-	*/
+	 * Searches for an available node large enough to hold the given dimensions.
+	 * Iterative implementation avoids recursive stack overhead.
+	 * 
+	 * @param root - Root node to begin searching from.
+	 * @param w - Required width.
+	 * @param h - Required height.
+	 * @returns The node that can fit the requested rectangle, or `null` if none found.
+	 * @internal
+	 */
 	private _findNode( root: ImageNode | null, w: number, h: number ): ImageNode | null
 	{
 		if ( !root ) return null;
@@ -136,9 +167,14 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 	}
 
 	/**
-	* Reserve space inside a node and create right/down children according to original algorithm.
-	* Returns the node that describes the placed rectangle (with used=true).
-	*/
+	 * Marks the specified node as used and splits it into right and down child nodes.
+	 * 
+	 * @param node - Node to split.
+	 * @param w - Width of the placed rectangle.
+	 * @param h - Height of the placed rectangle.
+	 * @returns The updated node with `used=true`.
+	 * @internal
+	 */
 	private _splitNode( node: ImageNode, w: number, h: number ): ImageNode
 	{
 		node.used = true;
@@ -170,18 +206,24 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 	}
 
 	/**
-	* Try to grow the root either right or down to make room for w x h.
-	*/
+	 * Attempts to expand the root node to fit a new rectangle.
+	 * Chooses to grow right or down depending on available space and proportions.
+	 * 
+	 * @param w - Width of the new rectangle.
+	 * @param h - Height of the new rectangle.
+	 * @returns A node where the rectangle fits, or `null` if growth is not possible.
+	 * @internal
+	 */
 	private _growNode( w: number, h: number ): ImageNode | null
 	{
-		if ( !this.root ) return null;
+		if ( ! this._root ) return null;
 
-		const canGrowDown = w <= this.root.w;
-		const canGrowRight = h <= this.root.h;
+		const canGrowDown = w <= this._root.w;
+		const canGrowRight = h <= this._root.h;
 
 		// try to keep atlas roughly square
-		const shouldGrowRight = canGrowRight && this.root.h >= this.root.w + w;
-		const shouldGrowDown = canGrowDown && this.root.w >= this.root.h + h;
+		const shouldGrowRight = canGrowRight && this._root.h >= this._root.w + w;
+		const shouldGrowDown = canGrowDown && this._root.w >= this._root.h + h;
 
 		if ( shouldGrowRight ) return this._growRight( w, h );
 		if ( shouldGrowDown ) return this._growDown( w, h );
@@ -192,18 +234,20 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 	}
 
 	/**
+	 * Expands the atlas horizontally to accommodate a new rectangle.
 	 * 
-	 * @param w 
-	 * @param h 
-	 * @returns 
+	 * @param w - Width of the new rectangle.
+	 * @param h - Height of the new rectangle.
+	 * @returns The node where the new rectangle was placed, or `null` if placement failed.
+	 * @internal
 	 */
 	private _growRight( w: number, h: number ): ImageNode | null
 	{
-		if ( ! this.root ) return null;
+		if ( ! this._root ) return null;
 
-		const oldRoot = this.root;
+		const oldRoot = this._root;
 
-		this.root = {
+		this._root = {
 			used: true,
 			x: 0,
 			y: 0,
@@ -222,23 +266,25 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 		};
 
 		// find node in the new root that fits
-		const node = this._findNode( this.root, w, h );
+		const node = this._findNode( this._root, w, h );
 		return node ? this._splitNode( node, w, h ) : null;
 	}
 
 	/**
+	 * Expands the atlas vertically to accommodate a new rectangle.
 	 * 
-	 * @param w 
-	 * @param h 
-	 * @returns 
+	 * @param w - Width of the new rectangle.
+	 * @param h - Height of the new rectangle.
+	 * @returns The node where the new rectangle was placed, or `null` if placement failed.
+	 * @internal
 	 */
 	private _growDown( w: number, h: number ): ImageNode | null
 	{
-		if ( ! this.root ) return null;
+		if ( ! this._root ) return null;
 
-		const oldRoot = this.root;
+		const oldRoot = this._root;
 		
-		this.root = {
+		this._root = {
 			used: true,
 			x: 0,
 			y: 0,
@@ -256,7 +302,7 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 			right: oldRoot,
 		};
 
-		const node = this._findNode( this.root, w, h );
+		const node = this._findNode( this._root, w, h );
 		return node ? this._splitNode( node, w, h ) : null;
 	}
 }

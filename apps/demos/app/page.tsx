@@ -6,6 +6,7 @@ import { type ParallaxSceneLayer, type ParallaxSceneOptions } from "@pronotron/p
 import { usePointerDataContext } from "./hooks/PointerDataProvider";
 import { useParallaxManagerContext } from "./hooks/ParallaxManagerProvider";
 import { useParallaxScene } from "./hooks/useParallaxScene";
+import { usePointerTargetContext } from "./hooks/PointerTargetProvider";
 
 const SCENE_01_LAYERS: ParallaxSceneLayer[] = [
 	{
@@ -85,24 +86,40 @@ function ParallaxScene({ id, layers }: ParallaxSceneOptions )
 	const sceneRef = useRef<HTMLDivElement>( null ! );
 
 	const { scene, sceneRect, loaded } = useParallaxScene( { id, layers }, sceneRef );
-	const { pointerEasedPosition } = usePointerDataContext();
+	const { pointerEasedPosition, pointerPosition, pointerDelta } = usePointerDataContext();
+
+	const { pointerTarget, setPointerTarget } = usePointerTargetContext();
 
 	useEffect(() => {
 
 		if ( ! scene ) return;
 
-		let x = ( pointerEasedPosition.x - sceneRect.left ) / sceneRect.width;
-		let y = ( pointerEasedPosition.y - sceneRect.top ) / sceneRect.height;
+		if ( pointerTarget !== sceneRef.current ){
+			return;
+		}
+
+		//console.log( pointerDelta )
+
+		const xDelta = scene.pointer.x + pointerDelta.x * 0.005;
+		const yDelta = scene.pointer.y + pointerDelta.y * 0.005;
+
+		let x = xDelta;
+		let y = yDelta;
 		
 		x = Math.min( Math.max( x, 0 ), 1 );
 		y = Math.min( Math.max( y, 0 ), 1 );
 
 		scene.setPointer( x, y );
 
+		return () => {
+			// Do not dispose scene for later uses
+			// scene.active = false;
+		}
+
 	}, [ sceneRect, pointerEasedPosition ]);
 
 	return (
-		<div ref={ sceneRef } className="border">
+		<div ref={ sceneRef } className="border parallaxScene">
 			<div className="label p-3">
 				<h1 className="text-red">Scene { id }</h1>
 				<h1 className="text-black">{ loaded }</h1>
@@ -110,3 +127,5 @@ function ParallaxScene({ id, layers }: ParallaxSceneOptions )
 		</div>
 	);
 }
+
+

@@ -1,71 +1,87 @@
 /**
- * Defines single image data type needs to be packed
+ * Single image entry to be packed into an atlas.
  */
 export type ImageSource = {
+	/**
+	 * Unique identifier for this image.
+	 */
 	id: string;
+	/**
+	 * Image bitmap data to pack.
+	 */
 	source: ImageBitmap;
 };
 
 /**
- * Defines how the image with ID, packed in the atlas
+ * Atlas entry describing where an image is placed.
  */
 export type AtlasResult = ImageSource & Rectangle;
 
 /**
- * Normalization required to use data in WebGL texture coordinates 0-1
+ * Atlas entry augmented with normalized coordinates (0..1)
+ * suitable for use as WebGL texture coordinates.
  */
-export type AtlasResultWithNormalized = AtlasResult & { normalized: Rectangle; };
+export type AtlasResultWithNormalized = AtlasResult & { 
+	/**
+	 * Normalized rectangle { x, y, w, h } where values are in [0, 1].
+	 */
+	normalized: Rectangle; 
+};
 
 /**
- * Output of the packing
+ * Result produced by a packer.
  */
 export type PackResult = {
 	/**
-	 * Final image dimensions
+	 * Final atlas dimensions in pixels.
 	 */
 	size: Size;
 	/**
-	 * Packed image data/atlas
+	 * Per-image placement data including normalized coordinates.
 	 */
 	atlas: AtlasResultWithNormalized[];
 };
 
 export type MergeResult = {
 	/**
-	 * Final merged image
+	 * Combined image containing all packed sources.
 	 */
 	image: ImageBitmap;
 	/**
-	 * Data of packing
+	 * Packing metadata describing placements and size.
 	 */
 	data: PackResult;
 };
 
 /**
- * 2D Texture packer algorithms
- * 
+ * Abstract base class for 2D texture packers.
+ * Subclasses must implement the `pack` method.
+ *
+ * References and implementations inspired by rectangle packing resources.
+ *
  * @see https://jvernay.fr/en/blog/skyline-2d-packer/implementation
  * @see https://www.david-colson.com/2020/03/10/exploring-rect-packing.html
  */
 export abstract class BaseTexturePacker
 {
 	/**
-	 * Different packing algorhtyms
-	 * @param images Given image sources
+	 * Packs a collection of images into an atlas.
+	 *
+	 * @param images - Array of images to pack.
+	 * @returns Packing result containing atlas entries and final size.
+	 * @throws Error when the input is invalid or packing fails.
 	 */
 	abstract pack( images: ImageSource[] ): PackResult;
 
 	/**
-	 * Points max size of WebGL renderer supports by user device.
-	 * Packers may calculate a packing bigger than that size. 
-	 * But we are downscaling to that if.
-	 *  
+	 * Maximum texture size supported by the target device.
+	 * Used to downscale pack results so the final atlas fits GPU limits.
 	 * @internal
 	 */
 	protected _maxTextureSize: number;
 
 	/**
-	 * @param maxTextureSize Device max supported texture size 
+	 * @param maxTextureSize - Device maximum supported texture dimension (width/height).
 	 */
 	constructor( maxTextureSize: number )
 	{
@@ -73,10 +89,13 @@ export abstract class BaseTexturePacker
 	}
 
 	/**
-	 * Creates final image by using Canvas
-	 * 
-	 * @param canvasSize Total packed size
-	 * @param atlasData Array of pack data
+	 * Merge individual ImageBitmap sources into a single ImageBitmap using a 2D canvas.
+	 * The result is optionally downscaled to fit the device's max texture size.
+	 *
+	 * @param packResult - Packing output with atlas positions and total size.
+	 * @param useOffscreen - Use OffscreenCanvas when available (default: true).
+	 * @param canvasSettings - Optional 2D context settings.
+	 * @returns A combined ImageBitmap ready for uploading to GPU.
 	 * @internal
 	 */
 	async _mergeImagesWithCanvas( packResult: PackResult, useOffscreen = true, canvasSettings?: CanvasRenderingContext2DSettings ): Promise<ImageBitmap>
@@ -108,12 +127,14 @@ export abstract class BaseTexturePacker
 	}
 
 	/**
-	 * Returns a canvas by given options to operate merging draw
-	 * 
-	 * @param useOffscreen 
-	 * @param width 
-	 * @param height 
-	 * @param settings
+	 * Create and return a canvas and its 2D rendering context.
+	 *
+	 * @param width - Canvas width in pixels.
+	 * @param height - Canvas height in pixels.
+	 * @param useOffscreen - If true prefer OffscreenCanvas when available.
+	 * @param settings - Optional 2D context creation settings.
+	 * @returns Object containing `canvas` and `context`.
+	 * @throws Error if the 2D context cannot be obtained.
 	 * @internal
 	 */
 	private _getCanvas( width: number, height: number, useOffscreen: boolean, settings?: CanvasRenderingContext2DSettings )
@@ -134,10 +155,12 @@ export abstract class BaseTexturePacker
 	}
 
 	/**
-	 * For testing purposes
-	 * 
-	 * @param image 
-	 * @param settings 
+	 * Utility to display an ImageBitmap on the document body for debugging.
+	 *
+	 * @param image - ImageBitmap to display.
+	 * @param settings - Optional 2D context settings for the debug canvas.
+	 * @throws Error if the 2D context cannot be obtained.
+	 * @internal
 	 */
 	displayImageBitmapOnScreen( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
 	{
@@ -158,6 +181,5 @@ export abstract class BaseTexturePacker
 		// image.close(); 
 
 		document.body.appendChild( canvas );
-
 	}
 }

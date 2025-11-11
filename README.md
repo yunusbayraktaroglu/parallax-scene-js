@@ -24,7 +24,8 @@ import { ParallaxScene, AdvancedAssetLoader, BasicAssetLoader } from "@pronotron
 const MANAGER = new ParallaxScene({
 	canvas: HTMLCanvasElement,
 	attributes: {
-		alpha: true
+		alpha: true,
+		...
 	},
 	// Basic or Advanced loader. Advanced supports onProgress event
 	loader: AdvancedAssetLoader
@@ -57,6 +58,11 @@ MANAGER.renderScene( PARALLAX_SCENE );
 <br/><br/>
 https://github.com/yunusbayraktaroglu/parallax-scene-js/assets/25721593/03b2734f-f50b-41c9-a172-b1118c52e2e9
 <br/><br/>
+
+## Project philosophy
+
+Parallax has been a core visual technique for over 90 years, used since the early days of animation, used in film, animation, and games to create depth and motion. This project continues that tradition in the modern WebGL pushing minimalism, performance, and control over abstraction layers to deliver the most direct and efficient rendering possible.
+
 <br/><br/>
 See [CONTRIBUTING ↗](.github/CONTRIBUTING.md)
 

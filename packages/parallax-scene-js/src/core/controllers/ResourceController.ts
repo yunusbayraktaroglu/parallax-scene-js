@@ -6,51 +6,132 @@ import { type MergeResult } from "../packers/BaseTexturePacker";
 
 import { generateGroupHash } from "../helpers/hashCreator";
 
+/**
+ * Represents a downloaded image with its source URL and decoded bitmap.
+ */
 export type ImageDownloadResult = {
 	url: string;
 	file: ImageBitmap;
 };
 
+/**
+ * Dependencies required for ResourceController operation.
+ */
+export type ResourceControllerDeps = {
+	textureHelper: TextureHelper
+	packer: BinaryTreeTexturePacker; // | SkylineTexturePacker
+};
+
+/**
+ * Manages all image and texture resources for WebGL rendering. 
+ * Handles caching, deduplication, merging, and texture creation.
+ */
 export class ResourceController
 {
+	/**
+	 * Map of image URLs to ImageBitmaps.
+	 * @internal
+	 */
+	private _images = new Map<string, ImageBitmap>();
+	
+	/**
+	 * Map of texture hashes to WebGLTextures.
+	 * @internal
+	 */
+	private _textures = new Map<string, WebGLTexture>();
+
+	/**
+	 * Cache of merged image atlases keyed by hash.
+	 * @internal
+	 */
+	private _mergedImages = new Map<string, MergeResult & { hash: string }>();
+	
+	/**
+	 * Handles WebGL texture creation.
+	 * @internal
+	 */
 	private _textureHelper: TextureHelper;
 
+	/**
+	 * Maximum texture size from GL context.
+	 * @internal
+	 */
 	private _maxTextureSize: number = 0;
+
+	/**
+	 * Packs multiple images into one large atlas.
+	 * @internal
+	 */
 	private _binaryTreeTexturePacker: BinaryTreeTexturePacker;
 
-	private _images = new Map<string, ImageBitmap>();
-	private _textures = new Map<string, WebGLTexture>();
-	private _mergedImages = new Map<string, MergeResult>();
-
-	constructor( gl: ParallaxRenderingContext, glVersion: "1" | "2" )
-	{
-		this._maxTextureSize = gl.MAX_TEXTURE_SIZE;
-		this._textureHelper = new TextureHelper( gl, glVersion );
-
-		/**
-		 * @bug
-		 * using this._maxTextureSize creates bug, probably atlas normalizing error
-		 */
-		this._binaryTreeTexturePacker = new BinaryTreeTexturePacker( 8192 );
-	}
-
 	/**
-	 * Creates a WebGL texture with given {@link TextureOptions}
+	 * Fixed atlas size of 8192 used instead of MAX_TEXTURE_SIZE to avoid texture normalization inconsistencies
 	 * 
-	 * @param imageBitmap
-	 * @param options 
+	 * @param dependencies WebGL rendering context used for texture operations.
 	 */
-	createTexture( imageBitmap: ImageBitmap, options?: TextureOptions )
+	constructor( dependencies: ResourceControllerDeps )
 	{
-		const texture = this._textureHelper.createTexture( imageBitmap, options );
-		return texture;
+		this._textureHelper = dependencies.textureHelper;
+		/**
+		 * @bug 
+		 * Using this._maxTextureSize causes atlas normalization errors during texture packing.
+		 */
+		this._binaryTreeTexturePacker = dependencies.packer;
 	}
 
 	/**
-	 * Caches ImageBitmap with given key
+	 * Creates and caches a WebGL texture using the provided image and options. {@link TextureOptions}
 	 * 
-	 * @param key Image unique key
-	 * @param imageBitmap 
+	 * @param hash Unique identifier for deduplication
+	 * @param imageBitmap The image data used to create the texture.
+	 * @param options Optional texture creation parameters.
+	 */
+	createTexture( hash: string, imageBitmap: ImageBitmap, options?: TextureOptions )
+	{
+		const texture = this._textures.get( hash );
+
+		if ( texture ){
+			console.warn( `${ hash }: texture was created previously` );
+			return texture;
+		}
+
+		const newTexture = this._textureHelper.createTexture( imageBitmap, options );
+		
+		this._textures.set( hash, newTexture );
+
+		return newTexture;
+	}
+
+	/**
+	 * Deletes an image from cache and releases its associated bitmap
+	 * 
+	 * @param url Image URL key used to locate and delete the cached ImageBitmap.
+	 */
+	deleteImage( url: string )
+	{
+		const image = this._images.get( url );
+
+		if ( image ){
+			image.close();
+			this._images.delete( url );
+		}
+	}
+	
+	/**
+	 * Removes a texture from cache without affecting the underlying WebGL resource.
+	 * 
+	 * @param hash Unique identifier of the texture to remove from the cache.
+	 */
+	deleteTexture( hash: string )
+	{
+		this._textures.delete( hash );
+	}
+
+	/**
+	 * Stores an `ImageBitmap` in cache under the given key, preventing duplicate entries.
+	 * 
+	 * @param key Unique identifier for the image, usually its source URL.
+	 * @param imageBitmap The decoded bitmap to store in cache.
 	 */
 	add( key: string, imageBitmap: ImageBitmap )
 	{
@@ -63,29 +144,34 @@ export class ResourceController
 	}
 
 	/**
-	 * Merges given ImageBitmaps into 1 image using packing algorhyms
+	 * Combines multiple ImageBitmap instances into a single atlas texture using the binary tree packing algorithm.
 	 * 
-	 * @param imageBitmaps Image Bitmaps
-	 * @param canvasSettings Default `{ alpha: true }`
+	 * @param imageBitmaps Array of image download results to merge.
+	 * @param canvasSettings Canvas rendering settings. Default `{ alpha: true }`
 	 */
-	async merge( imageBitmaps: ImageDownloadResult[], canvasSettings: CanvasRenderingContext2DSettings = { alpha: true } ): Promise<MergeResult>
+	async merge( imageBitmaps: ImageDownloadResult[], canvasSettings: CanvasRenderingContext2DSettings = { alpha: true } ): Promise<MergeResult & { hash: string }>
 	{
-		const HASH = generateGroupHash( imageBitmaps.map( image => image.url ) );
+		// A scene may have different layers with same image source
+		// Remove duplicates to merge only unique image sources.
+		const uniqueMap = new Map( imageBitmaps.map( item => [ item.url, item ] ) );
+		const uniqueImageBitmaps = [ ...uniqueMap.values() ];
+
+		const HASH = generateGroupHash( uniqueImageBitmaps.map( image => image.url ) );
 		const mergedImage = this._mergedImages.get( HASH );
 
 		if ( mergedImage ) return mergedImage;
 
 		try {
 
-			const packerData = imageBitmaps.map( file => ({ id: file.url, source: file.file }));
+			const packerData = uniqueImageBitmaps.map( file => ({ id: file.url, source: file.file }));
 			
 			// Start packing
 			const packResult = this._binaryTreeTexturePacker.pack( packerData );
 			const mergedImage = await this._binaryTreeTexturePacker._mergeImagesWithCanvas( packResult, true, canvasSettings );
 
-			this._mergedImages.set( HASH, { image: mergedImage, data: packResult } );
+			this._mergedImages.set( HASH, { image: mergedImage, data: packResult, hash: HASH } );
 			
-			return { image: mergedImage, data: packResult };
+			return { image: mergedImage, data: packResult, hash: HASH };
 
 		} catch( error ){
 
@@ -95,10 +181,10 @@ export class ResourceController
 	}
 
 	/**
-	 * For debugging merged images
+	 * Displays a merged image on-screen for debugging or visualization purposes.
 	 * 
-	 * @param image 
-	 * @param settings 
+	 * @param image The image to draw.
+	 * @param settings Optional canvas rendering settings.
 	 */
 	drawImageOnCanvas( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
 	{

@@ -6,6 +6,5 @@ export default {
 	...defaultPreset,
 	testMatch: [ "**/tests/*.test.ts" ],
 	testEnvironment: "node",
-	collectCoverage: true,
-	coverageReporters: [ "json" ],
+	collectCoverage: true
 };

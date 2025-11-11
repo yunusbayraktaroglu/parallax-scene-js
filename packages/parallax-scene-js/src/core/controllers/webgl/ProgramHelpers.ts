@@ -48,7 +48,7 @@ export type ShaderUniformData = {
 	 * 'uniform vec2 u_resolution' → 2
 	 * 'uniform mat3 u_projection' → 9
 	 * 'uniform float u_time' → 1
-	 * 'uniform sampler2D u_image0' → ?
+	 * 'uniform sampler2D u_texture' → ?
 	 */
 	size: GLint;
 	/**
@@ -99,6 +99,11 @@ export class ProgramHelper
 {
 	gl: ParallaxRenderingContext;
 
+	/**
+	 * Creates a new ProgramHelper for managing WebGL programs.
+	 *
+	 * @param gl The WebGL rendering context used for WebGL program operations.
+	 */
 	constructor( gl: ParallaxRenderingContext )
 	{
 		this.gl = gl;

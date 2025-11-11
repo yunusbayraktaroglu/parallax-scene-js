@@ -34,11 +34,6 @@ export class BufferGeometry
      */
     readonly id = BufferGeometry._nextId++;
 
-	/**
-     * Read-only flag to check if a given object is of type {@link BufferGeometry}.
-     */
-    readonly isBufferGeometry = true;
-
     /**
      * Optional name for this {@link BufferGeometry | BufferGeometry} instance.
      * @defaultValue `''`

@@ -199,11 +199,31 @@ export interface TextureOptions
 	aniso?: number;
 }
 
+/**
+ * Helper class for creating and configuring WebGL textures.
+ * Encapsulates common texture operations including creation, parameter setup, and mipmap generation.
+ */
 export class TextureHelper
 {
+	/**
+	 * WebGL rendering context used for all texture operations.
+	 * @internal
+	 */
 	private _gl: ParallaxRenderingContext;
+
+	/**
+	 * WebGL version in use: `"1"` or `"2"`.
+	 * @todo Currently not fully implemented.
+	 * @internal
+	 */
 	private _version: "1" | "2";
-	
+
+	/**
+	 * Initializes a new {@link TextureHelper} with the given WebGL context and version.
+	 * 
+	 * @param gl - WebGL rendering context.
+	 * @param version - WebGL version ("1" or "2").
+	 */
 	constructor( gl: ParallaxRenderingContext, version: "1" | "2" )
 	{
 		this._gl = gl;
@@ -211,11 +231,12 @@ export class TextureHelper
 	}
 
 	/**
-	 * Creates WebGL texture with given ImageBitmap and options
-	 * {@link defaultOptions}
+	 * Creates a WebGL texture from an {@link ImageBitmap} with configurable {@link defaultOptions}.
+	 * Mipmaps, filtering, wrapping, and pixel store parameters are applied automatically.
 	 * 
-	 * @param image ImageBitmap
-	 * @param options Texture options
+	 * @param image - Image bitmap to upload to the GPU.
+	 * @param options - Optional texture parameters overriding defaults.
+	 * @returns A new WebGLTexture object.
 	 */
 	createTexture( image: ImageBitmap, options: TextureOptions = {} ): WebGLTexture
 	{
@@ -247,9 +268,10 @@ export class TextureHelper
 	}
 
 	/**
-	 * Sets WebGL pixel store parameters from an options object.
-	 *
-	 * @param options An object with texture parameters.
+	 * Configures WebGL pixel store parameters based on texture options.
+	 * 
+	 * @param options - Texture options affecting pixel storage behavior.
+	 * @internal
 	 */
 	private _setPixelStore( options: TextureOptions ): void
 	{
@@ -275,11 +297,11 @@ export class TextureHelper
 	}
 
 	/**
-	 * Sets WebGL texture parameters (filtering and wrapping) from an options object.
-	 *
-	 * @param gl The WebGL rendering context.
-	 * @param target The texture target (e.g., gl.TEXTURE_2D).
-	 * @param options An object with texture parameters.
+	 * Configures WebGL texture parameters including filtering, wrapping, mipmaps, LOD, and anisotropy.
+	 * 
+	 * @param target WebGL texture target (e.g., gl.TEXTURE_2D).
+	 * @param options Texture parameters to apply.
+	 * @internal
 	 */
 	private _setTextureParameters( target: GLenum, options: TextureOptions ): void
 	{
@@ -366,14 +388,39 @@ export class TextureHelper
 		}
 	}
 
+	/**
+	 * Wrapper for gl.pixelStorei
+	 * 
+	 * @param pname - Pixel store parameter name
+	 * @param param - Parameter value
+	 * @internal
+	 */
 	private _pixelStorei( pname: number, param: number | boolean ): void
 	{
 		this._gl.pixelStorei( pname, param );
 	}
+
+	/**
+	 * Wrapper for gl.texParameteri
+	 * 
+	 * @param target - Texture target
+	 * @param pname - Texture parameter name
+	 * @param param - Parameter value
+	 * @internal
+	 */
 	private _texParameteri( target: number, pname: number, param: number ): void
 	{
 		this._gl.texParameteri( target, pname, param );
 	}
+
+	/**
+	 * Wrapper for gl.texParameterf
+	 * 
+	 * @param target - Texture target
+	 * @param pname - Texture parameter name
+	 * @param param - Parameter value
+	 * @internal
+	 */
 	private _texParameterf( target: number, pname: number, param: number ): void
 	{
 		this._gl.texParameterf( target, pname, param );

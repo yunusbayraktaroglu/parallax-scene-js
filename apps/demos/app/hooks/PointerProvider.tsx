@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { TouchController, MouseController } from "@pronotron/pointer";
 import { PronotronAnimator, PronotronClock, isTouchDevice } from "@pronotron/utils";
+import { usePointerTargetContext } from "./PointerTargetProvider";
 
 export const defaultPointerSettings = {
 	tapThreshold: 0.25,
@@ -27,9 +28,13 @@ export const usePointerContext = () => {
 
 export function PronotronPointerProvider({ children }: { children: React.ReactNode })
 {
+	const { pointerTarget, setPointerTarget } = usePointerTargetContext();
+
 	const clock = useRef( new PronotronClock() );
 	const animator = useRef( new PronotronAnimator( clock.current ) );
 	const pointerController = useRef<TouchController | MouseController>( null ! );
+
+	//console.log( "RERENDER", pointerTarget );
 
 	/**
 	 * Pointer controller setup
@@ -41,12 +46,16 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			animator: animator.current,
 			clock: clock.current,
 			isInteractable: ( target: HTMLElement ) => {
-				// console.log( target )
+
+				setPointerTarget( target.closest( ".parallaxScene" ) as HTMLElement );
+
 				// If target inside an <a>, <button> or .holdable return true
 				if ( target.closest( "a" ) || target.closest( "button" ) || target.closest( ".holdable" ) ){
 					return true;
 				}
+
 				return false;
+				
 			},
 			isHoldable: ( target: HTMLElement ) => {
 				return target.dataset.holded ? true : false;
@@ -93,7 +102,7 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 	/**
 	 * CustomEvent listeners
 	 */
-	useEffect(() => {
+	useEffect( () => {
 
 		const holdHandler = ( event: CustomEvent ) => {
 			document.documentElement.classList.add( "holding" );
@@ -117,7 +126,7 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			window.document.body.removeEventListener( "tap", tapHandler as EventListener );
 		}
 
-	}, []);
+	}, [] );
 
 	return (
 		<PointerContext.Provider value={{ pointerController }}>

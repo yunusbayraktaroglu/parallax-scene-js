@@ -6,7 +6,6 @@ import { LoadingManager } from './LoadingManager';
 
 const _errorMap = new WeakMap();
 
-
 /**
  * A basic loader that do not supports {@link ProgressEvent}, 
  * instead uses item count based progress.
@@ -20,14 +19,6 @@ const _errorMap = new WeakMap();
 export class BasicBitmapLoader extends Loader<ImageBitmap>
 {
 	manager = new LoadingManager();
-
-	/**
-	 * This flag can be used for type testing.
-	 *
-	 * @readonly
-	 * @default true
-	 */
-	readonly isImageBitmapLoader = true;
 
 	/**
 	 * Represents the loader options.
@@ -85,7 +76,6 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 				cached.then(( imageBitmap: ImageBitmap ) => {
 
 					// check if there is an error for the cached promise
-
 					if ( _errorMap.has( cached ) === true ){
 
 						onError?.( _errorMap.get( cached ) );

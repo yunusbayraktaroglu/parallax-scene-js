@@ -6,10 +6,6 @@ import { BufferGeometry } from "../geometries/BufferGeometry";
 /**
  * Interleaves given group of standard attributes
  * 
- * @todo
- * Interleaved attributes should replaced with the old ones, one by one with attribute names,
- * that also will dispose WebGL buffer if associated previously with the removed standard attributes
- * 
  * @see https://github.com/mrdoob/three.js/blob/master/examples/jsm/utils/BufferGeometryUtils.js#L133
  * 
  * @param attributes 

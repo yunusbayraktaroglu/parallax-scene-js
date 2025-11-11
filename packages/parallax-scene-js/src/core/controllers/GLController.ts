@@ -1,9 +1,18 @@
+/**
+ * Options for creating a WebGL rendering context.
+ */
 type GetContextOptions = {
+	/** Target canvas element for WebGL rendering. */
 	canvas: HTMLCanvasElement;
+	/** WebGL version to request: "1" for WebGL1 or "2" for WebGL2. Defaults to "2". */
 	version?: "1" | "2";
+	/** Optional WebGL context attributes. */
 	attributes?: WebGLContextAttributes;
 };
 
+/**
+ * Default WebGL context attributes used when none are provided.
+ */
 const DEFAULT_ATTRIBUTES = {
 	alpha: false,
 	antialias: false,
@@ -16,15 +25,33 @@ const DEFAULT_ATTRIBUTES = {
 } satisfies WebGLContextAttributes;
 
 /**
- * Get GL from given HTMLCanvasElement
- * or create a new canvas with WebGLContext
+ * Manages WebGL context creation, configuration, and error handling.
  */
 export class GLController
 {
+	/**
+	 * The HTML canvas element associated with this controller.
+	 */
 	canvas: HTMLCanvasElement;
+
+	/**
+	 * The active WebGL rendering context.
+	 */
 	gl: ParallaxRenderingContext;
+
+	/**
+	 * The WebGL version currently in use. 
+	 */
 	version: "1" | "2";
 
+	/**
+	 * Creates a new GLController instance.
+	 * 
+	 * @param options - Configuration options for context creation.
+	 * @param options.canvas - The canvas element to use.
+	 * @param options.version - WebGL version ("1" or "2"). Defaults to "2".
+	 * @param options.attributes - Optional WebGL context attributes.
+	 */
 	constructor({ canvas, version = "2", attributes = {} }: GetContextOptions )
 	{
 		this.version = version;
@@ -33,8 +60,10 @@ export class GLController
 	}
 
 	/**
-	 * Creates a HTMLCanvasElement 
-	 * @returns HTMLCanvasElement
+	 * Creates and returns a new HTMLCanvasElement.
+	 * 
+	 * @returns A new HTMLCanvasElement instance.
+	 * @internal
 	 */
 	private _createCanvasElement(): HTMLCanvasElement
 	{
@@ -43,8 +72,13 @@ export class GLController
 	}
 
 	/**
-	 * Try to get context from internal canvas
-	 * @returns 
+	 * Attempts to obtain a WebGL rendering context from the internal canvas.
+	 * Registers error and recovery event listeners for context loss.
+	 * 
+	 * @param contextAttributes - WebGL context attribute settings.
+	 * @returns The acquired WebGL context.
+	 * @throws Error if the context cannot be created.
+	 * @internal
 	 */
 	private _getGL( contextAttributes: WebGLContextAttributes ): ParallaxRenderingContext
 	{
@@ -98,12 +132,14 @@ export class GLController
 
 	}
 
+
 	/**
-	 * Returns the rendering context
+	 * Attempts to retrieve a WebGL rendering context using the provided names and attributes.
 	 * 
-	 * @param contextNames Given context names
-	 * @param contextAttributes Given context settings
-	 * @returns WebGL2RenderingContext | WebGLRenderingContext | null
+	 * @param contextNames - Ordered list of context types to try ("webgl2", "webgl").
+	 * @param contextAttributes - Optional WebGL context attributes.
+	 * @returns The first available rendering context, or null if none are supported.
+	 * @internal
 	 */
 	private _getContext( contextNames: ContextTypes[], contextAttributes?: WebGLContextAttributes ): ParallaxRenderingContext | null
 	{

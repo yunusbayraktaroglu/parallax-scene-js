@@ -2,18 +2,18 @@ import { BufferAttribute } from "../../buffers/BufferAttribute";
 import { InterleavedBuffer } from "../../buffers/InterleavedBuffer";
 
 /**
- * Geometry rendering
+ * Geometry rendering attribute types
  * 
- * Not Interleaved Attributes:
- * - Each attribute must have its own WebGLBuffer
- * - Each attribute must use bindBuffer() then -> enableVertexAttribArray(), vertexAttribPointer()
+ * Non-Interleaved Attributes:
+ * - Each attribute has its own separate WebGLBuffer.
+ * - Each attribute requires calling bindBuffer(), then enableVertexAttribArray(), and vertexAttribPointer().
  * 
  * Interleaved Attributes:
- * - Only 1 WebGLBuffer needed
- * - Only 1 interleaved buffer attribute must use with bindBuffer(), then for each attribute -> enableVertexAttribArray(), vertexAttribPointer()
- * - Interleaved attributes shares same InterleavedBufferAttribute.data (InterleavedBuffer) property that holds the actual data
+ * - Only a single WebGLBuffer is needed.
+ * - One InterleavedBufferAttribute is bound, then for each attribute call enableVertexAttribArray() and vertexAttribPointer().
+ * - Interleaved attributes share the same InterleavedBufferAttribute.data (InterleavedBuffer), which holds the actual data.
  */
-type ModifiedBufferAttribute = BufferAttribute | InterleavedBuffer;
+type Attribute = BufferAttribute | InterleavedBuffer;
 
 export type BufferStorage = {
 	buffer: WebGLBuffer;
@@ -47,11 +47,16 @@ export type BufferStorage = {
  */
 export class BufferHelper
 {
-	gl: WebGLRenderingContext | WebGL2RenderingContext;
+	gl: ParallaxRenderingContext;
 
-	buffers = new WeakMap<ModifiedBufferAttribute, BufferStorage>();
+	buffers = new WeakMap<Attribute, BufferStorage>();
 
-	constructor( gl: WebGLRenderingContext | WebGL2RenderingContext )
+	/**
+	 * Creates a new BufferHelper for managing WebGL buffers.
+	 *
+	 * @param gl The WebGL rendering context used for WebGL buffer operations.
+	 */
+	constructor( gl: ParallaxRenderingContext )
 	{
 		this.gl = gl;
 	}
@@ -62,7 +67,7 @@ export class BufferHelper
 	 * @param attribute 
 	 * @returns BufferStorage | undefined
 	 */
-	get( attribute: ModifiedBufferAttribute ): BufferStorage | undefined
+	get( attribute: Attribute ): BufferStorage | undefined
 	{
 		return this.buffers.get( attribute );
 	}
@@ -72,7 +77,7 @@ export class BufferHelper
 	 * 
 	 * @param attribute 
 	 */
-	remove( attribute: ModifiedBufferAttribute ): void
+	remove( attribute: Attribute ): void
 	{
 		const data = this.buffers.get( attribute );
 
@@ -89,14 +94,13 @@ export class BufferHelper
 	 * @param attribute
 	 * @param bufferType
 	 */
-	update( attribute: ModifiedBufferAttribute, bufferType: GLenum ): void
+	update( attribute: Attribute, bufferType: GLenum ): void
 	{
 		const data = this.buffers.get( attribute );
 
 		if ( data === undefined ){
 
 			this.buffers.set( attribute, this._createBuffer( attribute, bufferType ) );
-			console.log( "BUFFER CREATED", attribute );
 			return;
 
 		} else if ( data.version < attribute.version ){
@@ -107,15 +111,11 @@ export class BufferHelper
 
 			}
 
-			console.log( "BUFFER UPDATED", attribute );
 			this._updateBuffer( data.buffer, attribute, bufferType );
 
 			data.version = attribute.version;
 			return;
 		}
-
-		//console.log( "BUFFER SKIPPED", attribute );
-
 	}
 
 	/**
@@ -125,7 +125,7 @@ export class BufferHelper
 	 * @param bufferType 
 	 * @returns 
 	 */
-	private _createBuffer( attribute: ModifiedBufferAttribute, bufferType: GLenum )
+	private _createBuffer( attribute: Attribute, bufferType: GLenum )
 	{
 		const gl = this.gl;
 
@@ -215,7 +215,7 @@ export class BufferHelper
 	 * @param attribute 
 	 * @param bufferType 
 	 */
-	private _updateBuffer( buffer: WebGLBuffer, attribute: ModifiedBufferAttribute, bufferType: GLenum )
+	private _updateBuffer( buffer: WebGLBuffer, attribute: Attribute, bufferType: GLenum )
 	{
 		const gl = this.gl;
 		

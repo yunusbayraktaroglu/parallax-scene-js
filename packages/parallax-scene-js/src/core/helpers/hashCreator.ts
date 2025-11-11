@@ -2,7 +2,7 @@
  * Creates a deterministic hash using array of paths
  * 
  * @param paths 
- * @returns 
+ * @returns Generated HASH
  */
 export function generateGroupHash( paths: string[] ): string 
 {

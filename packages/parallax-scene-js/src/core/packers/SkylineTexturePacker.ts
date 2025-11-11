@@ -12,6 +12,9 @@ type SkylineNode = {
 /**
  * Skyline 2D Texture packer algorithm
  * 
+ * @todo
+ * Do not works as expected, creates much more bigger packing then {@link BinaryTreeTexturePacker}
+ * 
  * @see https://jvernay.fr/en/blog/skyline-2d-packer/implementation
  * @see https://www.david-colson.com/2020/03/10/exploring-rect-packing.html
  */
@@ -28,6 +31,14 @@ export class SkylineTexturePacker extends BaseTexturePacker
 		this.binHeight = binHeight;
 	}
 
+	/**
+	 * Packs a list of image sources into a single atlas using a binary tree method.
+	 * 
+	 * @param images - Array of images to be packed.
+	 * @returns The packing result, including normalized atlas coordinates and total texture size.
+	 * @throws Error if the input array is empty or packing fails for any image.
+	 * @internal
+	 */
 	pack( images: ImageSource[] ): PackResult
 	{
 		const maxBinWidth = this._maxTextureSize
@@ -47,7 +58,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 
 			if ( ! item ) break;
 
-			const result = this.add( item );
+			const result = this._add( item );
 
 			if ( result ){
 
@@ -108,7 +119,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 				}
 
 				// Perform the grow operation
-				this.grow( newWidth, newHeight );
+				this._grow( newWidth, newHeight );
 
 				// The loop will now retry adding `item` with the new bin size.
 			}
@@ -138,7 +149,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 	 * @param newWidth The new width. Must be >= current width.
 	 * @param newHeight The new height. Must be >= current height.
 	 */
-	public grow( newWidth: number, newHeight: number ): void
+	private _grow( newWidth: number, newHeight: number ): void
 	{
 		if ( newWidth < this.binWidth || newHeight < this.binHeight ){
 			console.warn( "Cannot grow bin to a smaller size." );
@@ -171,8 +182,9 @@ export class SkylineTexturePacker extends BaseTexturePacker
 	 *
 	 * @param item The item to pack.
 	 * @returns A PackedItem with coordinates if successful, or null if it fails.
+	 * @internal
 	 */
-	public add( item: ImageSource ): AtlasResult | null
+	private _add( item: ImageSource ): AtlasResult | null
 	{
 		const width = item.source.width;
 		const height = item.source.height;
@@ -260,7 +272,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 		this.skyline.splice( bestNodeIndex, removedCount, ...nodesToAdd );
 
 		// --- 5. Merge redundant nodes ---
-		this.mergeSkyline();
+		this._mergeSkyline();
 
 		// --- 6. Return the packed item ---
 		const packedItem: AtlasResult = {
@@ -276,8 +288,9 @@ export class SkylineTexturePacker extends BaseTexturePacker
 
 	/**
 	 * Merges adjacent skyline nodes that are at the same 'y' level.
+	 * @internal
 	 */
-	private mergeSkyline(): void
+	private _mergeSkyline(): void
 	{
 		for ( let i = 0; i < this.skyline.length - 1; i++ ){
 			const node1 = this.skyline[ i ];

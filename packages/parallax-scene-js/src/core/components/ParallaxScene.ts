@@ -1,80 +1,82 @@
 import { type RequireAtLeastOne, type RequireExactlyOne } from "@pronotron/utils";
+import { type AtlasResultWithNormalized } from '../packers/BaseTexturePacker';
 
 import { BufferGeometry } from '../geometries/BufferGeometry';
 import { ParallaxGeometry } from '../geometries/ParallaxGeometry';
 import { mergeGeometries } from '../helpers/mergeGeometries';
 import { interleaveAttributes } from '../helpers/attributeInterleaver';
 
-import { type AtlasResultWithNormalized } from '../packers/BaseTexturePacker';
 import { BufferAttribute } from '../buffers/BufferAttribute';
 import { InterleavedBufferAttribute } from '../buffers/InterleavedBufferAttribute';
 
 import { Material } from "./Material";
 
 /**
- * The settings when creating a new {@link ParallaxScene}
+ * Configuration used to initialize a {@link ParallaxScene}.
  */
 export type ParallaxSceneSettings = Readonly<{
 	/**
-	 * Unique ID of the parallax scene
+	 * Unique identifier for this parallax scene.
 	 */
 	id: string;
 	/**
-	 * Each layer in the scene, must be ordered
+	 * Ordered list of scene layers.
 	 */
 	layers: ParallaxLayer[];
 	/**
-	 * Material will be used in rendering
+	 * Material used for rendering the scene.
 	 */
 	material: Material;
 	/**
-	 * Merged WebGL texture of the scene layers
+	 * Combined WebGL texture containing all layer images.
 	 */
 	texture: WebGLTexture;
 }>;
 
 /**
- * These options required by user, used for creating each layer of the scene
+ * Defines a single layer within a parallax scene.
  */
 export type ParallaxLayer = Readonly<{
 	/**
-	 * Layer ID, probably pointing to layer image URL
+	 * Unique identifier for this layer, usually tied to its image source URL. +index
 	 */
 	id: string;
 	/**
-	 * Where to find layer image in the given merged texture
+	 * Normalized atlas data specifying this layer’s position in the merged texture.
 	 */
 	atlas: AtlasResultWithNormalized;
 	/**
-	 * Layer image source width/height ratio to be able easy resizing
+	 * Aspect ratio (width/height) of the source image, used for scaling.
 	 */
 	ratio: number;
 	/**
-	 * Parallax settings
+	 * Layer-specific parallax configuration.
 	 */
 	settings: ParallaxLayerSettings;
 }>;
 
 /**
- * These options required by user
+ * Defines movement, size, and position settings for a parallax layer.
  */
 export type ParallaxLayerSettings = Readonly<{
 	/**
-	 * Value: 1 -> Moves the layer without it moving out of the canvas.
+	 * Controls the relative movement of this layer.
+	 * Value `1` means the layer stays within canvas bounds.
 	 * 
 	 * @example
 	 * { x: 0.3, y: 1.0 }
 	 */
 	parallax: RequireAtLeastOne<Vector2>;
 	/**
-	 * Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
+	 * Optional scaling factor. 
+	 * Resizes the layer relative to the canvas while preserving aspect ratio.
 	 * 
 	 * @example
 	 * { h: 1.5 } | { w: 1.3 }
 	 */
 	fit?: RequireExactlyOne<Size>;
 	/**
-	 * Positions the layer respective to its size
+	 * Optional offset, moving the layer relative to its size.
 	 * 
 	 * @example
 	 * { x: -0.25 }
@@ -82,73 +84,85 @@ export type ParallaxLayerSettings = Readonly<{
 	translate?: RequireAtLeastOne<Vector2>;
 }>;
 
+/**
+ * User-defined data for each parallax scene layer.
+ */
 export type ParallaxSceneLayer = ParallaxLayerSettings & {
 	/**
-	 * URL of the image of the layer. Absolute or relative
+	 * Absolute or relative image URL of this layer.
 	 */
 	url: string;
 	/**
-	 * Byte value of the URL.
-	 * If missing FileLoader checks for 'Content-Length' HTTP header to determine the total size of any asset. 
-	 * Try to make sure that your server is setting this on the response, other-wise it will be 0.
+	 * Expected file size in bytes.
+	 * If not provided, the loader will attempt to read the `Content-Length` header.
 	 */
 	sizeInBytes?: number;
 };
 
+/**
+ * Base implementation of a parallax scene.
+ * Handles geometry creation, resizing, and rendering data management.
+ */
 export class ParallaxSceneBase
 {
 	/**
-	 * Unique ID given by user for the scene
+	 * User-defined unique scene identifier.
 	 */
 	readonly id: string;
 
 	/**
-	 * Used settings to create Parallax Scene
+	 * Scene configuration used to initialize this instance.
 	 */
 	readonly settings: ParallaxSceneSettings;
 
 	/**
-	 * Vertex Array Object
-	 * Will be created by rendering process
+	 * Whether the scene should be rendered.
+	 */
+	active: boolean = true;
+
+	/**
+	 * Vertex Array Object created during first rendering.
 	 * 
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLVertexArrayObject
 	 */
 	vao?: WebGLVertexArrayObject | WebGLVertexArrayObjectOES;
 
 	/**
-	 * Merged geometry using all the layers
+	 * Combined geometry containing all scene layers.
 	 */
 	geometry: BufferGeometry;
 
 	/**
-	 * Material
+	 * Material assigned to this scene.
 	 */
 	material!: Material;
 
 	/**
-	 * Merged texture of the scene
+	 * Merged texture containing all layer images.
 	 */
 	texture: WebGLTexture;
 
 	/**
-	 * **Normalized** pointer position to ParallaxScene,
-	 * Scene might be at any position with some offsets in the screen. So must updated by user
+	 * **Normalized** pointer position within the scene (0–1 range).
+	 * Must be updated externally when the scene moves on screen.
 	 * 
-	 * @default
-	 * { x: 0.5, y: 0.5 } // Centered
+	 * @default { x: 0.5, y: 0.5 }
 	 */
 	pointer: Vector2 = { x: 0.5, y: 0.5 };
 
 	/**
-	 * How to draw on canvas,
-	 * Each scene has its own resolution.
-	 * to use in `gl.viewport( x, y, w, h )` and `gl.scissor( x, y, w, h )`
+	 * Viewport rectangle in canvas coordinates.
+	 * Used for `gl.viewport()` and `gl.scissor()`.
 	 * 
-	 * @info
-	 * `y` have to point bottom in WebGL pixel coordinates (OpenGL's +Y-up convention)
+	 * @note `y` must represent the bottom in WebGL coordinates (+Y is up).
 	 */
 	rect: Rectangle = { x: 0, y: 0, w: 0, h: 0 };
 
+	/**
+	 * Creates a new parallax scene base instance.
+	 * 
+	 * @param settings - Configuration object defining scene layers, material, and texture.
+	 */
 	constructor( settings: ParallaxSceneSettings )
 	{
 		this.id = settings.id;
@@ -159,17 +173,17 @@ export class ParallaxSceneBase
 		this.texture = settings.texture;
 
 		this.material.updateUniforms({
-			u_image0: {
+			u_texture: {
 				value: this.texture
 			},
 		});
 	}
 
 	/**
-	 * Normalized pointer position `0 - 1`
+	 * Updates the normalized pointer position (0–1 range).
 	 * 
-	 * @param x X position 
-	 * @param y Y position
+	 * @param x - Normalized X coordinate.
+	 * @param y - Normalized Y coordinate.
 	 */
 	setPointer( x: number, y: number )
 	{
@@ -178,9 +192,10 @@ export class ParallaxSceneBase
 	}
 
 	/**
-	 * Set scene rectangle for scene in canvas
-	 * @param rect 
-	 * @info `y` have to point bottom in WebGL pixel coordinates (OpenGL's +Y-up convention)
+	 * Updates the scene’s canvas rectangle and resizes accordingly.
+	 * 
+	 * @param newRect - Updated rectangle dimensions.
+	 * @note `y` must represent the bottom in WebGL coordinates.
 	 */
 	setRect( newRect: Rectangle )
 	{
@@ -189,10 +204,10 @@ export class ParallaxSceneBase
 	}
 
 	/**
-	 * Updates scale attribute of each layer geometry
+	 * Updates the layer scaling attributes based on the scene size.
 	 * 
-	 * @param sceneWidth 
-	 * @param sceneHeight 
+	 * @param sceneWidth - Width of the scene in pixels.
+	 * @param sceneHeight - Height of the scene in pixels.
 	 */
 	resize( sceneWidth: number, sceneHeight: number )
 	{
@@ -202,11 +217,11 @@ export class ParallaxSceneBase
 	}
 
 	/**
-	 * Creates a basic plane geometry for each layer, 
-	 * then returns a single merged geometry with using {@link mergeGeometries}.
-	 *  
-	 * @param layers Parallax layers
-	 * @returns Merged single geometry
+	 * Creates and merges plane geometries for all layers.
+	 * 
+	 * @param layers - List of parallax layers.
+	 * @returns Combined geometry.
+	 * @internal
 	 */
 	private _createGeometry( layers: ParallaxLayer[] ): BufferGeometry
 	{
@@ -233,10 +248,10 @@ export class ParallaxSceneBase
 	 * Updates scale attribute with given settings and dimensions.
 	 * if {@link ParallaxLayerSettings.fit} is not defined, scale is equal to source image size.
 	 * 
-	 * @param sceneWidth Scene render width 
-	 * @param sceneHeight Scene render height
-	 * @param scaleAttribute Scale attribute of the geometry
-	 * @returns 
+	 * @param sceneWidth - Render width.
+	 * @param sceneHeight - Render height.
+	 * @param scaleAttribute - Geometry scale attribute buffer.
+	 * @internal 
 	 */
 	protected _resize( sceneWidth: number, sceneHeight: number, scaleAttribute: InterleavedBufferAttribute | BufferAttribute ): void
 	{
@@ -290,17 +305,33 @@ export class ParallaxSceneBase
 }
 
 
-
+/**
+ * Extended parallax scene that uses interleaved buffer attributes.
+ */
 export class ParallaxScene extends ParallaxSceneBase
 {
+	/**
+	 * Interleaved geometry attributes.
+	 */
 	attributes!: InterleavedBufferAttribute[];
 
+	/**
+	 * Creates a parallax scene that uses interleaved buffer attributes for better GPU performance.
+	 * 
+	 * @param settings - Configuration object defining scene layers, material, and texture.
+	 */
 	constructor( settings: ParallaxSceneSettings )
 	{
 		super( settings );
 		this._interleaveAttributes();
 	}
 
+	/**
+	 * Resizes the scene and updates interleaved attributes.
+	 * 
+	 * @param sceneWidth - Width of the scene in pixels.
+	 * @param sceneHeight - Height of the scene in pixels.
+	 */
 	resize( sceneWidth: number, sceneHeight: number )
 	{
 		// Get scale attribute in InterleavedAttributes
@@ -309,6 +340,10 @@ export class ParallaxScene extends ParallaxSceneBase
 		this._resize( sceneWidth, sceneHeight, scaleAttribute );
 	}
 
+	/**
+	 * Converts regular geometry attributes into interleaved attributes for performance.
+	 * @internal
+	 */
 	private _interleaveAttributes()
 	{
 		const attributes = Object.values( this.geometry.attributes ) as BufferAttribute[];

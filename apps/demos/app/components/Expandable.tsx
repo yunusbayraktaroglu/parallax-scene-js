@@ -9,14 +9,14 @@ interface HideableRowProps {
 	children: React.ReactNode;
 };
 
-export function Expandable({ expand = true, title, children }: HideableRowProps)
+export function Expandable({ expand = true, title, children, ...divProps }: HideableRowProps & React.ComponentProps<"div">)
 {
 	const [ expandState, setExpandState ] = useState<boolean>( expand );
 	const ariaExpanded = expandState ? 'true' : 'false';
 	const opacity = ! expandState ? " opacity-50" : "";
 
 	return (
-		<div className={ "container flex flex-col py-spacing-sm landscape:py-spacing-sm" + opacity }>
+		<div className={ "container flex flex-col py-spacing-sm landscape:py-spacing-sm" + opacity } { ...divProps }>
 			<div className="flex flex-row justify-between">
 				<button
 					type='button'

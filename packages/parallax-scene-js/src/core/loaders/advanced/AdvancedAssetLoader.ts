@@ -2,49 +2,66 @@ import { type ImageDownloadResult } from "../../controllers/ResourceController";
 import { AdvancedBitmapLoader } from "./AdvancedBitmapLoader";
 import { ParallaxSceneLayer } from "../../components/ParallaxScene";
 
-type Images = {
+/**
+ * Represents a single asset load request.
+ */
+type LoadRequest = {
+	/** The URL of the asset to load. */
 	url: string;
+	/** The total size of the asset in bytes, if known (e.g. from a manifest). */
 	sizeInBytes?: number;
 };
 
+/**
+ * Loads image assets with detailed progress tracking and optional size manifest support.
+ * Handles both known and unknown content lengths, enabling accurate percentage reporting.
+ */
 export class AdvancedAssetLoader
 {
+	/**
+	 * Internal bitmap loader instance responsible for individual image downloads
+	 * @internal
+	 */
 	private _imageLoader = new AdvancedBitmapLoader();
-	//private _soundLoader = new AdvancedSoundLoader();
 
 	/**
-	 * Chunk based preloader
+	 * Loads multiple images asynchronously with progress tracking.
 	 * 
-	 * 1. Server may send opaque responses, user can use manifest.json
-	 * 2. Can check content-length from response
+	 * Supports both:
+	 * - Known file sizes (via manifest data)
+	 * - Unknown sizes (estimated from download progress)
 	 * 
-	 * @param scene
-	 * @param onProgress
+	 * @param images - List of image load requests.
+	 * @param onProgress - Optional callback fired with the overall loading percentage (0–100).
+	 * @returns A promise resolving to an array of loaded image results.
 	 */
-	async loadImagesAsync( images: Images[], onProgress?: ( percent: number ) => void ): Promise<ImageDownloadResult[]>
+	async loadImagesAsync( images: LoadRequest[], onProgress?: ( percent: number ) => void ): Promise<ImageDownloadResult[]>
 	{
 		try {
-			// Check for some, if found then every layer will be checked in _calculateTotalLoadSize 
+			// If at least one image includes sizeInBytes, assume manifest-based loading
 			const useManitest = images.some( image => image.sizeInBytes );
 
-			// AssetUrl → Total Bytes
+			// Maps each asset URL to its total expected size (bytes)
 			const totalSizeMap = new Map<string, number>();
 
-			// AssetUrl → Loaded Bytes
+			// Maps each asset URL to its currently loaded byte count
 			const loadedSizeMap = new Map<string, number>();
 
-			// Calculate total size if manifest json used, else start with zero
+			// Initialize total expected load size
 			let totalLoadSize = useManitest ? this._calculateTotalLoadSize( images ) : 0;
 			let totalLoaded = 0;
 			let lastPercent = 0;
 
+			/**
+			 * Updates overall loading progress whenever an asset reports progress.
+			 */
 			const updateProgress = ( url: string, { loaded, total }: ProgressEvent ) =>
 			{
 				/**
-				 * Add total size when the the first bytes comes
+				 * Add total size when the first bytes are received (non-manifest mode only).
 				 * 
 				 * @todo
-				 * That can be moved into loaders onLoadStart()
+				 * Move this logic into loader's onLoadStart() event.
 				 */
 				if ( ! useManitest && ! loadedSizeMap.has( url ) ){
 					totalLoadSize += total;
@@ -65,14 +82,16 @@ export class AdvancedAssetLoader
 				}
 			}
 
-			// Decrease totalLoadSize if layer download throws error
-			const onError = ( image: Images ) =>
+			/**
+			 * Handles errors during image download.
+			 * Decreases totalLoadSize to maintain accurate percentage calculation.
+			 */
+			const onError = ( image: LoadRequest ) =>
 			{
-				// If sizeInBytes is missing, so we use manifets, 
-				// totalSizeMap should defined or not proceed any
 				totalLoadSize -= ( image.sizeInBytes || totalSizeMap.get( image.url ) || 0 ); 
 			};
 
+			// Create async download tasks for each image
 			const layerPromises = images.map( async ( image ) => 
 			{
 				const request = useManitest ? { url: image.url, sizeInBytes: image.sizeInBytes! } : image.url;
@@ -100,13 +119,15 @@ export class AdvancedAssetLoader
 	}
 
 	/**
-	 * Calculates total load size by scene data using
-	 * {@link ParallaxSceneLayer.sizeInBytes} property.
+	 * Calculates the total expected size of all image assets based on their {@link ParallaxSceneLayer.sizeInBytes} values.
+	 * Used when a manifest provides known file sizes.
 	 * 
-	 * @param scene  
+	 * @param images - List of images with defined sizeInBytes properties.
+	 * @returns The total number of bytes expected to be downloaded.
+	 * @throws If any image is missing the sizeInBytes property.
 	 * @internal
 	 */
-	private _calculateTotalLoadSize( images: Images[] )
+	private _calculateTotalLoadSize( images: LoadRequest[] )
 	{
 		return images.reduce( ( total, image ) => {
 

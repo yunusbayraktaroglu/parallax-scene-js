@@ -1,9 +1,9 @@
 /**
- * Returns if texture size is power of two
+ * Returns if texture size is power of 2
  * 
  * @param textureWidth 
  * @param textureHeight 
- * @returns 
+ * @returns True if texture is power of 2
  */
 export function isPOTTexture( textureWidth: number, textureHeight: number ): boolean
 {

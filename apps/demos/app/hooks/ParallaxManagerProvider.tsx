@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
 import { ParallaxManager } from "@pronotron/parallax-scene-js";
 
@@ -23,7 +23,7 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 	const canvasRef = useRef<HTMLCanvasElement>( null );
 	const [ parallaxController, setParallaxController ] = useState<ParallaxManager | null>( null );
 
-	useEffect(() => {
+	useLayoutEffect( () => {
 
 		if ( ! canvasRef.current ) return;
 
@@ -52,7 +52,7 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 			ro.disconnect();
 		};
 		
-	}, []);
+	}, [] );
 
 	return (
 		<>
