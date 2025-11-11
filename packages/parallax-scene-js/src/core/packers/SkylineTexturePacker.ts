@@ -41,7 +41,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 	 */
 	pack( images: ImageSource[] ): PackResult
 	{
-		const maxBinWidth = this._maxTextureSize
+		const maxBinWidth = this._maxTextureSize;
 		const maxBinHeight = this._maxTextureSize;
 
 		const packedResults: AtlasResult[] = [];
@@ -135,7 +135,7 @@ export class SkylineTexturePacker extends BaseTexturePacker
 					w: layer.w / this.binWidth,
 					h: layer.h / this.binHeight,
 				}
-			}
+			};
 		} );
 
 		return {

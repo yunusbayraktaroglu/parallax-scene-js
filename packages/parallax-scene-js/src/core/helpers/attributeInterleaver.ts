@@ -56,9 +56,9 @@ export function interleaveAttributes( attributes: BufferAttribute[] ): Interleav
 
 		// Move the data for each attribute into the new interleavedBuffer
 		// at the appropriate offset
-		for ( let c = 0; c < count; c ++ ) {
+		for ( let c = 0; c < count; c ++ ){
 
-			for ( let k = 0; k < itemSize; k ++ ) {
+			for ( let k = 0; k < itemSize; k ++ ){
 				
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore

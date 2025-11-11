@@ -163,7 +163,7 @@ export class ResourceController
 
 		try {
 
-			const packerData = uniqueImageBitmaps.map( file => ({ id: file.url, source: file.file }));
+			const packerData = uniqueImageBitmaps.map( file => ( { id: file.url, source: file.file } ) );
 			
 			// Start packing
 			const packResult = this._binaryTreeTexturePacker.pack( packerData );

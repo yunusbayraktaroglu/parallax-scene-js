@@ -1,0 +1,28 @@
+{
+	"name": "parallax-scene-js",
+	"entryPointStrategy": "packages",
+	"entryPoints": [
+		"../../packages/parallax-scene-js",
+	],
+	"packageOptions": {
+        "entryPoints": [ "src/index.ts" ]
+    },
+	"includeVersion": true,
+	"out": "./out",
+	"json": "./out/all.json",
+	"readme": "none",
+	"excludePrivate": true,
+	"excludeProtected": true,
+	"excludeInternal": true,
+	"excludeNotDocumented": true,
+	"excludeReferences": true,
+	"excludeTags": [
+		//"@override",
+		//"@virtual",
+		//"@privateRemarks",
+		//"@satisfies",
+		//"@overload",
+		//"@example",
+		//"@see"
+	],
+}

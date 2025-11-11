@@ -175,7 +175,7 @@ export abstract class BaseTexturePacker
 		canvas.height = image.height;
 
 		// 3. Draw the ImageBitmap to the screen
-		context.drawImage( image, 0, 0);
+		context.drawImage( image, 0, 0 );
 
 		// Optional: Release the memory held by the ImageBitmap immediately
 		// image.close(); 

@@ -250,14 +250,14 @@ export class BufferHelper
 
 			let mergeIndex = 0;
 
-			for ( let i = 1; i < updateRanges.length; i ++ ) {
+			for ( let i = 1; i < updateRanges.length; i ++ ){
 
 				const previousRange = updateRanges[ mergeIndex ];
 				const range = updateRanges[ i ];
 
 				// We add one here to merge adjacent ranges. This is safe because ranges
 				// operate over positive integers.
-				if ( range.start <= previousRange.start + previousRange.count + 1 ) {
+				if ( range.start <= previousRange.start + previousRange.count + 1 ){
 
 					previousRange.count = Math.max(
 						previousRange.count,
@@ -276,7 +276,7 @@ export class BufferHelper
 			// Trim the array to only contain the merged ranges.
 			updateRanges.length = mergeIndex + 1;
 
-			for ( let i = 0, l = updateRanges.length; i < l; i ++ ) {
+			for ( let i = 0, l = updateRanges.length; i < l; i ++ ){
 
 				const range = updateRanges[ i ];
 

@@ -1,6 +1,6 @@
 {
 	"name": "@pronotron/parallax-scene-js",
-	"version": "3.0.0",
+	"version": "2.0.0",
 	"description": "Create raw WebGL parallax scenes with only 1 draw call.",
 	"author": "Yunus Bayraktaroglu <yunus.bayraktaroglu@gmail.com>",
 	"main": "./dist/index.js",
@@ -31,7 +31,7 @@
 		"build": "tsup src/index.ts --format esm,cjs --dts --minify terser",
 		"dev": "tsup src/index.ts --format esm,cjs --dts --watch ",
 		"lint": "eslint .",
-		"lint:fix": "eslint ./tests/* --max-warnings 0 --fix",
+		"lint:fix": "eslint . --max-warnings 0 --fix",
 		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
 	},
 	"devDependencies": {

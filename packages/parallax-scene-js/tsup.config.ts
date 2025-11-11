@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 import { glslMinifierPlugin } from "./esbuild-plugin/GlslMinifier";
 
-export default defineConfig({
+export default defineConfig( {
 	loader: {
 		'.glsl': 'text'
 	},
@@ -18,6 +18,9 @@ export default defineConfig({
 	 * @see https://tsup.egoist.dev/#minify-output
 	 */
 	terserOptions: {
+		compress: {
+			drop_console: [ "warn" ],
+		},
 		mangle: {
 			properties: {
 				regex: /^_/,
@@ -25,4 +28,4 @@ export default defineConfig({
 		},
 	},
 	esbuildPlugins: [ glslMinifierPlugin ]
-});
+} );

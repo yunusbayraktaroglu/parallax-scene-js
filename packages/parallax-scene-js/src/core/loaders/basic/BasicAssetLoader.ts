@@ -50,11 +50,11 @@ export class BasicAssetLoader
 					onProgress?.( ( loaded / total ) * 100 );
 				} )
 				.then( imageBitmap => {
-					return { url: image.url, file: imageBitmap } 
+					return { url: image.url, file: imageBitmap }; 
 				} )
 				.catch( error => {
 					throw error;
-				} )
+				} );
 			} );
 
 			return await Promise.all( layerPromises );

@@ -69,7 +69,7 @@ export class ParallaxGeometry extends BufferGeometry
 		// Create atlas attributes
 		const atlas = [];
 
-		let { w, h, x, y } = parallaxLayer.atlas.normalized;
+		const { w, h, x, y } = parallaxLayer.atlas.normalized;
 
 		for ( let j = 0; j < verticesCount * 4; j += 4 ){
 			atlas[ j + 0 ] = w;

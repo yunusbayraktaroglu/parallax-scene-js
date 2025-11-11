@@ -183,28 +183,22 @@ export class RenderController
 		}
 
 		// Ensure VAO and buffers are bound before drawing
-		if ( ! scene.vao ){
-		}
-
 		this._onBeforeRender( scene );
 
-		// Bind program and uniforms only if material changed
+		// Bind program only if material changed
 		if ( this._materialCache !== scene.material.id ){
 
-			// We are sure that programInfo builded in _onBeforeRender()
-			const { uniforms, programInfo: { program, uniformsData } } = scene.material as { uniforms: Uniforms, programInfo: ProgramInfo };
-
-			gl.useProgram( program );
-
-			// Bind uniforms right after gl.useProgram
-			this._uniformsHelper.bindUniforms( uniformsData, uniforms );
+			gl.useProgram( scene.material.programInfo.program );
 
 			// Cache material to avoid redundant gl.useProgram calls
 			this._materialCache = scene.material.id;
 
 		}
 
-
+		/**
+		 * @TODO
+		 * Bind only changed uniforms
+		 */
 		const { x, y, w, h } = scene.rect;
 
 		const { programInfo: { uniformsData } } = scene.material as { uniforms: Uniforms, programInfo: ProgramInfo };
@@ -219,9 +213,8 @@ export class RenderController
 			u_texture: {
 				value: scene.texture
 			}
-		}
+		};
 		this._uniformsHelper.bindUniforms( uniformsData, updatedUniforms );
-
 
 		/**
 		 * @TODO
@@ -248,10 +241,10 @@ export class RenderController
 	dispose( scene: ParallaxScene )
 	{
 		// Remove all attribute buffers
-		Object.values( scene.geometry.attributes ).forEach(( attribute, ndx ) => {
+		Object.values( scene.geometry.attributes ).forEach( ( attribute, ndx ) => {
 			const nonInterleavedAttribute = attribute as BufferAttribute;
 			this._buffersHelper.remove( nonInterleavedAttribute );
-		});
+		} );
 
 		// Remove shared interleaved buffer
 		this._buffersHelper.remove( scene.attributes[ 0 ].data );
@@ -338,12 +331,12 @@ export class RenderController
 		_extensions.bindVertexArray( scene.vao );
 
 		// Bind each non-interleaved attribute individually
-		Object.values( scene.geometry.attributes ).forEach(( attribute, ndx ) => {
+		Object.values( scene.geometry.attributes ).forEach( ( attribute, ndx ) => {
 			const nonInterleavedAttribute = attribute as BufferAttribute;
 			const attributeData = shaderAttributesData.find( attributeData => attributeData.name === nonInterleavedAttribute.name )!;
 			const bufferData = _buffersHelper.get( nonInterleavedAttribute )!;
 			_attributesHelper.bindStandardAttribute( nonInterleavedAttribute, attributeData, bufferData );
-		});
+		} );
 		_attributesHelper.bindIndices( _buffersHelper.get( scene.geometry.index! )! );
 
 		// Close VAO

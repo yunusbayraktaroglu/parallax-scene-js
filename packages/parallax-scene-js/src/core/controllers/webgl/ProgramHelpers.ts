@@ -134,7 +134,7 @@ export class ProgramHelper
 	{
 		const gl = this.gl;
 
-		const shaders = shaderSources.map(( source, ndx ) => {
+		const shaders = shaderSources.map( ( source, ndx ) => {
 
 			const shader = gl.createShader( ndx === 0 ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER );
 
@@ -156,10 +156,10 @@ export class ProgramHelper
 
 			return shader;
 
-		});
+		} );
 
 		const program = gl.createProgram() as WebGLProgram;
-		shaders.forEach(( shader ) => gl.attachShader( program, shader ));
+		shaders.forEach( ( shader ) => gl.attachShader( program, shader ) );
 
 		/**
 		 * Constant attribute location usage benefits
@@ -170,9 +170,9 @@ export class ProgramHelper
 		 * - Flexibility: Allows custom mappings, especially useful for reusable or complex systems where shaders and vertex data formats may vary.
 		 */
 		if ( opt_attribs ){
-			Object.keys( opt_attribs ).forEach(( attrib, ndx ) => {
+			Object.keys( opt_attribs ).forEach( ( attrib, ndx ) => {
 				gl.bindAttribLocation( program, ndx, attrib );
-			});
+			} );
 		}
 
 		gl.linkProgram( program );
@@ -306,13 +306,13 @@ export class ProgramHelper
 				};
 			}
 
-			uniformDatas.push({
+			uniformDatas.push( {
 				name: uniformName,
 				size: uniformInfo.size,
 				type: uniformInfo.type,
 				location,
 				model
-			});
+			} );
 		}
 
 		return uniformDatas;

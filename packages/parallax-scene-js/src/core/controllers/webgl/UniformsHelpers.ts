@@ -51,7 +51,7 @@ export class UniformsHelper
 		 * Verify that each declared shader uniform has been assigned a value.
 		 */
 
-		Object.keys( uniforms ).forEach(( name ) => {
+		Object.keys( uniforms ).forEach( ( name ) => {
 
 			const uniformData = uniformDatas.find( uniformData => uniformData.name === name );
 
@@ -101,7 +101,7 @@ export class UniformsHelper
 					}
 				};
 			}
-		});
+		} );
 	}
 
 	/**

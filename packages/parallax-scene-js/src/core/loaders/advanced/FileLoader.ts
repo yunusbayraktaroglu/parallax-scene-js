@@ -2,7 +2,7 @@ import { Loader, FileOption, AdvancedOnProgress } from '../core/Loader';
 import { HttpError, OnError, OnLoad, OnProgress } from '../core/LoaderUtils';
 import { Cache } from '../core/Cache';
 
-interface LoadCallback {
+interface LoadCallback{
 	onLoad?: OnLoad;
 	onProgress?: AdvancedOnProgress;
 	onError?: OnError;
@@ -78,7 +78,7 @@ export class FileLoader extends Loader<string | ArrayBuffer | Blob | ImageBitmap
 		}
 
 		// Check if request is duplicate
-		if ( loading[ url ] !== undefined ) {
+		if ( loading[ url ] !== undefined ){
 			loading[ url ].push( { onLoad, onProgress, onError } );
 			return;
 		}

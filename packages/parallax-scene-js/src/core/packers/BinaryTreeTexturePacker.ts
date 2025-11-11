@@ -120,7 +120,7 @@ export class BinaryTreeTexturePacker extends BaseTexturePacker
 					w: layer.w / canvasSize.w,
 					h: layer.h / canvasSize.h,
 				}
-			}
+			};
 		} );
 
 		return { 

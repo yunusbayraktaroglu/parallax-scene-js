@@ -74,13 +74,13 @@ export class AdvancedAssetLoader
 				totalLoaded += delta;
 				loadedSizeMap.set( url, loaded );
 
-				const percent = Math.round( Math.min(( totalLoaded / totalLoadSize ) * 100, 100 ) );
+				const percent = Math.round( Math.min( ( totalLoaded / totalLoadSize ) * 100, 100 ) );
 
 				if ( percent > lastPercent ){
 					lastPercent = percent;
 					onProgress?.( percent );
 				}
-			}
+			};
 
 			/**
 			 * Handles errors during image download.
@@ -100,12 +100,12 @@ export class AdvancedAssetLoader
 					updateProgress( image.url, event );
 				} )
 				.then( imageBitmap => {
-					return { url: image.url, file: imageBitmap } 
+					return { url: image.url, file: imageBitmap }; 
 				} )
 				.catch( error => {
 					onError( image );
 					throw error;
-				} )
+				} );
 
 			} );
 

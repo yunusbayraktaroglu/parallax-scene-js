@@ -15,7 +15,7 @@ export const glslMinifierPlugin: Plugin = {
 
 		// Load paths tagged with the "env-ns" namespace and behave as if
 		// they point to a JSON file containing the environment variables.
-		build.onLoad({ filter: glslPicker }, async ( args ) => {
+		build.onLoad( { filter: glslPicker }, async ( args ) => {
 			
      		let code = await fs.promises.readFile( args.path, 'utf8' );
 
@@ -32,7 +32,7 @@ export const glslMinifierPlugin: Plugin = {
 					i++;
 				}
 				return data[ match ];
-			});
+			} );
 
 			code = minifyShader( code );
 
@@ -41,7 +41,7 @@ export const glslMinifierPlugin: Plugin = {
         		loader: 'text',
       		};
 
-		} )
+		} );
 	},
 };
 
@@ -59,9 +59,9 @@ export const glslMinifierPlugin: Plugin = {
 function minifyShader( shader: string, newLine = false ): string
 {
 	return shader.replace( /\\(?:\r\n|\n\r|\n|\r)|\/\*.*?\*\/|\/\/(?:\\(?:\r\n|\n\r|\n|\r)|[^\n\r])*/g, '' )
-		.split( /\n+/ ).reduce(( result, line ) => {
+		.split( /\n+/ ).reduce( ( result, line ) => {
 			
-			line = line.trim().replace(/\s{2,}|\t/, ' ');
+			line = line.trim().replace( /\s{2,}|\t/, ' ' );
 
 			if ( /@(vertex|fragment|compute)/.test( line ) || line.endsWith( 'return' ) ) line += ' ';
 
@@ -74,7 +74,7 @@ function minifyShader( shader: string, newLine = false ): string
 
 			} else {
 
-				!line.startsWith( '{' ) && result.length && result[ result.length - 1 ].endsWith( 'else' ) && result.push(' ');
+				!line.startsWith( '{' ) && result.length && result[ result.length - 1 ].endsWith( 'else' ) && result.push( ' ' );
 
 				result.push( 
 					line.replace( /\s*({|}|=|\*|,|\+|\/|>|<|&|\||\[|\]|\(|\)|\-|!|;)\s*/g, '$1' ) 
@@ -86,5 +86,5 @@ function minifyShader( shader: string, newLine = false ): string
 
 			return result;
 
-		}, [] as string[] ).join('').replace( /\n+/g, '\n' );
+		}, [] as string[] ).join( '' ).replace( /\n+/g, '\n' );
 }

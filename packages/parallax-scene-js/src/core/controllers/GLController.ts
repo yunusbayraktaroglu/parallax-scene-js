@@ -52,7 +52,7 @@ export class GLController
 	 * @param options.version - WebGL version ("1" or "2"). Defaults to "2".
 	 * @param options.attributes - Optional WebGL context attributes.
 	 */
-	constructor({ canvas, version = "2", attributes = {} }: GetContextOptions )
+	constructor( { canvas, version = "2", attributes = {} }: GetContextOptions )
 	{
 		this.version = version;
 		this.canvas = canvas;
@@ -73,17 +73,17 @@ export class GLController
 		function onContextLost( event: WebGLContextEvent )
 		{
 			event.preventDefault();
-			console.log( `WebGL context lost.` );
+			console.warn( `WebGL context lost.` );
 		}
 
 		function onContextRestore()
 		{
-			console.log( `WebGL context restored.` );
+			console.warn( `WebGL context restored.` );
 		}
 
 		function onContextCreationError( event: WebGLContextEvent )
 		{
-			console.error( `WebGL context could not be created. Reason: ${ event.statusMessage }` );
+			console.warn( `WebGL context could not be created. Reason: ${ event.statusMessage }` );
 		}
 
 		try {

@@ -66,14 +66,14 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 
 		const cached = Cache.get( `image-bitmap:${ url }` );
 
-		if ( cached !== undefined ) {
+		if ( cached !== undefined ){
 
 			this.manager.itemStart( url );
 
 			// If cached is a promise, wait for it to resolve
 			if ( cached.then ){
 
-				cached.then(( imageBitmap: ImageBitmap ) => {
+				cached.then( ( imageBitmap: ImageBitmap ) => {
 
 					// check if there is an error for the cached promise
 					if ( _errorMap.has( cached ) === true ){

@@ -49,7 +49,7 @@ export class LoadingManager
 	 * 
      * @param callback URL modifier callback. Called with url argument, and must return resolvedURL.
      */
-    setURLModifier: ( callback?: (url: string) => string ) => this;
+    setURLModifier: ( callback?: ( url: string ) => string ) => this;
 
     /**
      * Given a URL, uses the URL modifier callback (if any) and returns a resolved URL.
@@ -65,7 +65,7 @@ export class LoadingManager
 
     // handlers
     addHandler: ( regex: RegExp, loader: Loader ) => this;
-    removeHandler:( regex: RegExp ) => this;
+    removeHandler: ( regex: RegExp ) => this;
     getHandler: ( file: string ) => Loader | null;
 
 	/**
@@ -77,8 +77,8 @@ export class LoadingManager
 	 */
 	constructor(         
 		onLoad?: () => void,
-        onProgress?: (url: string, loaded: number, total: number) => void,
-        onError?: (url: string) => void
+        onProgress?: ( url: string, loaded: number, total: number ) => void,
+        onError?: ( url: string ) => void
 	){
 
 		const scope = this;
@@ -86,7 +86,7 @@ export class LoadingManager
 		let isLoading = false;
 		let itemsLoaded = 0;
 		let itemsTotal = 0;
-		let urlModifier: (( string: string ) => string) | undefined = undefined;
+		let urlModifier: ( ( string: string ) => string ) | undefined = undefined;
 
 		const handlers: Array<RegExp | Loader> = [];
 
@@ -133,9 +133,9 @@ export class LoadingManager
 		{
 			itemsTotal ++;
 
-			if ( isLoading === false ) {
+			if ( isLoading === false ){
 
-				if ( scope.onStart !== undefined ) {
+				if ( scope.onStart !== undefined ){
 
 					scope.onStart( url, itemsLoaded, itemsTotal );
 
@@ -190,7 +190,7 @@ export class LoadingManager
 		 */
 		this.resolveURL = function ( url: string )
 		{
-			if ( urlModifier ) {
+			if ( urlModifier ){
 				return urlModifier( url );
 			}
 			return url;

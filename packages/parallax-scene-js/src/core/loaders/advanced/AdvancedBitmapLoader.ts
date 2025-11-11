@@ -43,7 +43,7 @@ export class AdvancedBitmapLoader extends Loader<ImageBitmap>
 
 	constructor()
 	{
-		if ( typeof createImageBitmap === 'undefined' ) {
+		if ( typeof createImageBitmap === 'undefined' ){
 			console.warn( 'ImageBitmapLoader: createImageBitmap() not supported.' );
 			//throw new Error();
 		}

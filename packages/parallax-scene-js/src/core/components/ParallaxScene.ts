@@ -42,6 +42,10 @@ export type ParallaxLayer = Readonly<{
 	 */
 	id: string;
 	/**
+	 * Layer image url, may be used before and not unique
+	 */
+	image: string;
+	/**
 	 * Normalized atlas data specifying this layer’s position in the merged texture.
 	 */
 	atlas: AtlasResultWithNormalized;

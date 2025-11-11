@@ -184,8 +184,8 @@ describe( 'ParallaxManager', () => {
 
 			// 4. Check resource registration
 			expect( mockResourceController.add ).toHaveBeenCalledWith( 'Merged:scene-1', mockMergeData.image );
-			expect( mockResourceController.add ).toHaveBeenCalledWith( 'layer1.png', mockImages[ 0 ].file );
-			expect( mockResourceController.add ).toHaveBeenCalledWith( 'layer2.png', mockImages[ 1 ].file );
+			expect( mockResourceController.add ).toHaveBeenCalledWith( "layer1.png", mockImages[ 0 ].file );
+			expect( mockResourceController.add ).toHaveBeenCalledWith( "layer2.png", mockImages[ 1 ].file );
 			expect( mockResourceController.add ).toHaveBeenCalledTimes( 3 );
 
 			// 5. Check ParallaxScene construction
@@ -193,13 +193,15 @@ describe( 'ParallaxManager', () => {
 				id: 'scene-1',
 				layers: [
 					{
-						id: 'layer1.png_0',
+						id: `0`,
+						image: "layer1.png",
 						settings: mockSceneOptions.layers[ 0 ],
 						atlas: mockMergeData.data.atlas[ 0 ],
 						ratio: 100 / 100,
 					},
 					{
-						id: 'layer2.png_1',
+						id: `1`,
+						image: "layer2.png",
 						settings: mockSceneOptions.layers[ 1 ],
 						atlas: mockMergeData.data.atlas[ 1 ],
 						ratio: 200 / 200,

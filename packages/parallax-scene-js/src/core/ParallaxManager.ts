@@ -97,7 +97,7 @@ export class ParallaxManager
 			// Check if the scene already exists in the manager
 			if ( this.scenes.has( id ) ){
 
-				//console.log( `Scene: '${ id }' is exist` );
+				console.warn( `Scene: '${ id }' is exist` );
 
 				const sceneCache = this.scenes.get( id )!;
 				sceneCache.active = true;
@@ -139,7 +139,8 @@ export class ParallaxManager
 
 				return {
 					// Expand with index: allows multiple uses of same image URL in one scene
-					id: `${ layerOption.url }_${ index }`,
+					id: `${ index }`,
+					image: layerOption.url,
 					settings: layerOption,
 					atlas: atlas,
 					ratio: atlas.w / atlas.h,
@@ -190,9 +191,7 @@ export class ParallaxManager
 	{
 		// Dispose individual ImageBitmaps
 		for ( const layer of scene.settings.layers ){
-
-			// @bug, we are modifying id by #0, #1 above
-			this._resourceController.deleteImage( layer.id );
+			this._resourceController.deleteImage( layer.image );
 		}
 
 		// Remove merged atlas ImageBitmap
