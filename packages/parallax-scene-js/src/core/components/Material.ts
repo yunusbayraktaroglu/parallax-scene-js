@@ -101,14 +101,13 @@ export class Material
 
 
 import vertexShader from '../shaders/vertex.glsl';
-import vertexClipSpace from '../shaders/vertex-clipspace.glsl';
 import fragmentShader from '../shaders/fragment.glsl';
 
 /**
  * Default material used for basic rendering operations.
  */
 export const DEFAULT_MATERIAL = new Material( { 
-	vertex: vertexClipSpace,
+	vertex: vertexShader,
 	fragment: fragmentShader,
 	transparent: true,
 	uniforms: {
