@@ -1,21 +1,18 @@
+import type { Linter } from "eslint";
 import stylistic from '@stylistic/eslint-plugin';
 
-import { config as baseConfig } from "./base.js";
+import { baseConfig } from "./base.js";
 
 /**
  * A shared TS library configuration for the packages.
- *
- * @type {import("eslint").Linter.Config[]}
- * */
-export const config = [
+ */
+export const libraryConfig: Linter.Config[] = [
 	...baseConfig,
 	{
 		plugins: {
 			'@stylistic': stylistic
 		},
 		rules: {
-			"eqeqeq": [ "warn", "smart" ],
-
 			"@typescript-eslint/no-use-before-define": "off",
 			"@typescript-eslint/no-unused-vars": [ "warn", { "argsIgnorePattern": "^_" }],
 			"@typescript-eslint/no-var-requires": [ "off" ],
@@ -36,11 +33,9 @@ export const config = [
 				"ignoreUrls": true,
 				"ignorePattern": "^import|^export"
 			} ],
-			'@stylistic/space-before-blocks': [ 'error', 'never' ],
-			'@stylistic/template-curly-spacing': [ 'error', 'always' ],
-
-			// Buggy
-			// "@stylistic/brace-style": [ "error", "allman", { "allowSingleLine": true } ],
+			//"@stylistic/brace-style": [ "error", "allman", { "allowSingleLine": true } ],
+			
+			"eqeqeq": [ "warn", "smart" ]
 		},
 	}
 ];
