@@ -87,4 +87,4 @@ function minifyShader( shader: string, newLine = false ): string
 			return result;
 
 		}, [] as string[] ).join( '' ).replace( /\n+/g, '\n' );
-}
+};

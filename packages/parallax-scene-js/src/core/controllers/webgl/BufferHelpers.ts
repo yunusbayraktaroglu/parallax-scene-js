@@ -145,15 +145,19 @@ export class BufferHelper
 
 			type = gl.FLOAT;
 
-		} else if ( typeof Float16Array !== 'undefined' && array instanceof Float16Array ){
+		} 
+		
+		// else if ( typeof Float16Array !== 'undefined' && array instanceof Float16Array ){
 
-			if ( gl instanceof WebGLRenderingContext ){
-				throw new Error( "Float16Array only supported with WebGL 2" );
-			}
+		// 	if ( gl instanceof WebGLRenderingContext ){
+		// 		throw new Error( "Float16Array only supported with WebGL 2" );
+		// 	}
 
-			type = gl.HALF_FLOAT;
+		// 	type = gl.HALF_FLOAT;
 
-		} else if ( array instanceof Uint16Array ){
+		// } 
+		
+		else if ( array instanceof Uint16Array ){
 
 			if ( 'isFloat16BufferAttribute' in attribute ){
 

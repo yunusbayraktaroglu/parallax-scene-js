@@ -4,13 +4,9 @@
 	"private": true,
 	"scripts": {
 		"docs": "typedoc",
-		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next"
+		"clean": "rm -rf .turbo && rm -rf node_modules && rm -rf out"
 	},
 	"devDependencies": {
-		"typedoc": "^0.28.14",
-		"@pronotron/config-eslint": "*",
-		"@pronotron/config-ts": "*",
-		"@types/node": "^20.11.24",
-		"typescript": "^5.9.3"
+		"typedoc": "^0.28.14"
 	}
 }
