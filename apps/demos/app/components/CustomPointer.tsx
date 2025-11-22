@@ -1,6 +1,6 @@
 "use client";
 
-import { usePointerDataContext } from "../hooks/PointerDataProvider";
+import { usePointerDataContext } from "@/app/providers/PointerDataProvider";
 
 export function PointerView()
 {

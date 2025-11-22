@@ -11,10 +11,10 @@
 	},
 	"dependencies": {
 		"@juggle/resize-observer": "^3.4.0",
-		"@pronotron/io": "0.0.1-beta.6",
+		"@pronotron/io": "^1.0.1",
 		"@pronotron/parallax-scene-js": "*",
-		"@pronotron/pointer": "0.0.1-beta.6",
-		"@pronotron/utils": "0.0.1-beta.6",
+		"@pronotron/pointer": "^1.0.0",
+		"@pronotron/utils": "^1.0.0",
 		"next": "^15.5",
 		"react": "^19.2",
 		"react-dom": "^19.2"

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { type ParallaxSceneLayer, type ParallaxSceneOptions } from "@pronotron/parallax-scene-js";
+import { type ParallaxSceneLayer } from "@pronotron/parallax-scene-js";
 
-import { useParallaxManagerContext } from "../../hooks/ParallaxManagerProvider";
-import { ParallaxScene } from "../../components/ParallaxScene";
+import { ParallaxScene } from "@/app/components/ParallaxScene";
 
 const SCENE_01_LAYERS: ParallaxSceneLayer[] = [
 	{
@@ -21,30 +19,30 @@ const SCENE_01_LAYERS: ParallaxSceneLayer[] = [
 	},
 ];
 
+/**
+ * Demo displays control bounds
+ * 
+ * @todo
+ * Add regression testing to that page
+ * 
+ * @todo
+ * 'limitControl': true
+ * 'controlRect': window
+ * 
+ * - generates control bug, limit control can only active if target is not 'window'
+ * - limit control should be connected with controlRect not self? (and if window it should disabled) 
+ */
 export default function LimitsPage()
 {
-	const { parallaxController } = useParallaxManagerContext();
-
-	useEffect( () => {
-
-		let animationFrameId = 0;
-
-		const tick = () => {
-			parallaxController.render();
-			animationFrameId = requestAnimationFrame( tick );
-		};
-
-		animationFrameId = requestAnimationFrame( tick );
-
-		return () => {
-			cancelAnimationFrame( animationFrameId );
-		}
-
-	}, [] );
-
 	return (
-		<div className="grid grid-cols-1 grid-rows-1 gap-spacing-xs w-full h-full">
-			<ParallaxScene id={ "#Limits" } layers={ SCENE_01_LAYERS } />
-		</div>
+		<main className="flex h-full w-full p-spacing-lg">
+			<ParallaxScene 
+				id="#limits-scene" 
+				layers={ SCENE_01_LAYERS }
+				controlType="standard"
+				// controlRect="window"
+				limitControl={ false }
+			/>
+		</main>
 	);
 }

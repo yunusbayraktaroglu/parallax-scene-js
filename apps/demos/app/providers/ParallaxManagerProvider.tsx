@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useEffect, useRef, useState } from "react";
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
 import { ParallaxManager, createParallaxManager } from "@pronotron/parallax-scene-js";
 
 interface PointerContextProps {
-	parallaxController: ParallaxManager;
+	parallaxManager: ParallaxManager;
 };
 
 const ParallaxManagerContext = createContext<PointerContextProps | undefined>( undefined );
@@ -21,34 +21,36 @@ export const useParallaxManagerContext = () => {
 export function PronotronParallaxManagerProvider({ children }: { children: React.ReactNode })
 {
 	const canvasRef = useRef<HTMLCanvasElement>( null );
-	const [ parallaxController, setParallaxController ] = useState<ParallaxManager | null>( null );
+	const [ parallaxManager, setParallaxManager ] = useState<ParallaxManager | null>( null );
 
 	useLayoutEffect( () => {
 
 		if ( ! canvasRef.current ) return;
 
-		const controller = createParallaxManager( {
-			canvas: canvasRef.current!,
+		// Create parallax manager
+		const parallaxManager = createParallaxManager( {
+			canvas: canvasRef.current,
 			version: "2",
 			attributes: {
 				alpha: false,
 				depth: false,
 				stencil: false,
-				premultipliedAlpha: false
+				premultipliedAlpha: true
 			},
 			loader: "advanced",
 		} );
 
+		setParallaxManager( parallaxManager );
+
+		// Connect resize observer
 		const ResizeObserver = window.ResizeObserver || Polyfill;
 
 		const ro = new ResizeObserver( ( entries, observer ) => {
 			const { clientWidth, clientHeight } = canvasRef.current!;
-			controller.updateResolution( clientWidth, clientHeight );
+			parallaxManager.updateResolution( clientWidth, clientHeight );
 		} );
 
 		ro.observe( canvasRef.current );
-
-		setParallaxController( controller );
 
 		return () => {
 			ro.disconnect();
@@ -56,13 +58,33 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 		
 	}, [] );
 
+	/**
+	 * Start render loop on ParallaxManager initialization
+	 */
+	useEffect( () => {
+
+		if ( ! parallaxManager ) return;
+
+		let animationFrameId = 0;
+
+		const tick = () => {
+			parallaxManager.render();
+			animationFrameId = requestAnimationFrame( tick );
+		};
+
+		animationFrameId = requestAnimationFrame( tick );
+
+		return () => cancelAnimationFrame( animationFrameId );
+
+	}, [ parallaxManager ] );
+
 	return (
 		<>
-			<canvas ref={ canvasRef } className="flex w-full h-full absolute left-0 top-0 z-[-1]" />
-			{ parallaxController && (
-				<ParallaxManagerContext.Provider value={{ parallaxController }}>
+			<canvas ref={ canvasRef } className="flex w-full h-full fixed left-0 top-0 z-[-1]" />
+			{ parallaxManager && (
+				<ParallaxManagerContext value={{ parallaxManager }}>
 					{ children	}
-				</ParallaxManagerContext.Provider>
+				</ParallaxManagerContext>
 			) }
 		</>
 	);

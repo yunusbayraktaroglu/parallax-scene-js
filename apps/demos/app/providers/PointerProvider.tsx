@@ -1,19 +1,20 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef } from "react";
-import { TouchController, MouseController } from "@pronotron/pointer";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createBasePointer, createHoldablePointer } from "@pronotron/pointer";
 import { PronotronAnimator, PronotronClock, isTouchDevice } from "@pronotron/utils";
-import { usePointerTargetContext } from "./PointerTargetProvider";
 
 export const defaultPointerSettings = {
 	tapThreshold: 0.25,
 	idleThreshold: 0.5,
-	holdThreshold: 0.75,
+	holdThreshold: 0.1,
 	movingDeltaLimit: 10,
 };
 
+type PointerController = ReturnType<typeof createBasePointer> | ReturnType<typeof createHoldablePointer>;
+
 interface PointerContextProps {
-	pointerController: React.RefObject<TouchController | MouseController>;
+	pointerController: PointerController;
 	animatorRef: React.RefObject<PronotronAnimator>;
 };
 
@@ -29,48 +30,51 @@ export const usePointerContext = () => {
 
 export function PronotronPointerProvider({ children }: { children: React.ReactNode })
 {
-	//const { pointerTarget, setPointerTarget } = usePointerTargetContext();
-
 	const clock = useRef( new PronotronClock() );
 	const animator = useRef( new PronotronAnimator( clock.current ) );
-	const pointerController = useRef<TouchController | MouseController>( null ! );
 
-	//console.log( "RERENDER", pointerTarget );
+	const [ pointerController, setPointerController ] = useState<PointerController>( null ! );
 
 	/**
 	 * Pointer controller setup
 	 */
-	useEffect(() => {
+	useEffect( () => {
 
-		const baseSettings = {
+		/**
+		 * Uses isTouchDevice() internally and decides the model.
+		 * Can be created with:
+		 * 
+		 * createHoldablePointer( settings, "mouse" | "touch" );
+		 * createBasePointer( settings, "mouse" | "touch" );
+		 */
+		const POINTER_CONTROLLER = createHoldablePointer( {
+			...defaultPointerSettings,
+			// Start at screen center
+			startPosition: {
+				x: window.innerWidth / 2,
+				y: window.innerHeight / 2,
+			},
 			target: window.document.body,
 			animator: animator.current,
 			clock: clock.current,
 			isInteractable: ( target: HTMLElement ) => {
 
-				//setPointerTarget( target.closest( ".parallaxScene" ) as HTMLElement );
+				// @ts-expect-error - _test
+				POINTER_CONTROLLER._test = target.closest( ".parallaxScene" );
 
 				// If target inside an <a>, <button> or .holdable return true
 				if ( target.closest( "a" ) || target.closest( "button" ) || target.closest( ".holdable" ) ){
 					return true;
 				}
-
 				return false;
-				
+	
 			},
 			isHoldable: ( target: HTMLElement ) => {
-				return target.dataset.holded ? true : false;
-			}
-		};
-		const settings = { ...baseSettings, ...defaultPointerSettings };
+				return target.closest( ".parallaxScene" ) ? true : false;
+			},
+		} );
 
-		if (  isTouchDevice() ){
-			pointerController.current = new TouchController( settings );
-		} else {
-			pointerController.current = new MouseController( settings );
-		}
-
-		pointerController.current.startEvents();
+		POINTER_CONTROLLER.startEvents();
 
 		let animationFrameId = 0;
 
@@ -92,13 +96,15 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 
 		document.addEventListener( 'visibilitychange', handleVisibilityChange );
 
+		setPointerController( POINTER_CONTROLLER );
+
 		return () => {
 			cancelAnimationFrame( animationFrameId );
 			document.removeEventListener( 'visibilitychange', handleVisibilityChange );
-			pointerController.current.stopEvents();
+			POINTER_CONTROLLER.stopEvents();
 		};
 		
-	}, []);
+	}, [] );
 
 	/**
 	 * CustomEvent listeners
@@ -117,21 +123,25 @@ export function PronotronPointerProvider({ children }: { children: React.ReactNo
 			console.log( "TAP", event );
 		};
 
-		window.document.body.addEventListener( "hold", holdHandler as EventListener );
-		window.document.body.addEventListener( "holdend", holdendHandler as EventListener );
+		//window.document.body.addEventListener( "hold", holdHandler as EventListener );
+		//window.document.body.addEventListener( "holdend", holdendHandler as EventListener );
 		//window.document.body.addEventListener( "tap", tapHandler as EventListener );
 
 		return () => {
-			window.document.body.removeEventListener( "hold", holdHandler as EventListener );
-			window.document.body.removeEventListener( "holdend", holdendHandler as EventListener );
+			//window.document.body.removeEventListener( "hold", holdHandler as EventListener );
+			//window.document.body.removeEventListener( "holdend", holdendHandler as EventListener );
 			//window.document.body.removeEventListener( "tap", tapHandler as EventListener );
 		}
 
 	}, [] );
 
+	if ( ! pointerController ){
+		return null;
+	}
+
 	return (
-		<PointerContext.Provider value={{ pointerController, animatorRef: animator }}>
+		<PointerContext value={{ pointerController, animatorRef: animator }}>
 			{ children }
-		</PointerContext.Provider>
+		</PointerContext>
 	);
 }

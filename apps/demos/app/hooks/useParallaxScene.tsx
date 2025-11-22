@@ -1,38 +1,62 @@
 "use client";
 
 import { useRef, useEffect, useState, useLayoutEffect } from "react";
-import { ResizeObserver as Polyfill } from '@juggle/resize-observer';
-import { ParallaxScene, type ParallaxSceneOptions } from "@pronotron/parallax-scene-js";
+import { ParallaxScene } from "@pronotron/parallax-scene-js";
 
-import { useParallaxManagerContext } from "./ParallaxManagerProvider";
-import { usePointerDataContext } from "./PointerDataProvider";
+import { useParallaxManagerContext } from "@/app/providers/ParallaxManagerProvider";
+import { usePronotronIOContext } from "@/app/providers/PronotronIOProvider";
+import { useParallaxDebugProviderContext } from "@/app/providers/ParallaxDebugProvider";
 
+import { ParallaxSceneProps } from "@/app/components/ParallaxScene";
 
-export function useParallaxScene( sceneOptions: ParallaxSceneOptions, sceneRef: React.RefObject<HTMLDivElement> )
+// All the data should be assigned before to use that hook
+type UseParallaxSceneProps = Required<ParallaxSceneProps & {
+	sceneRef: React.RefObject<HTMLDivElement>;
+}>;
+
+export function useParallaxScene( { id, layers, controlType, controlRect, limitControl, sceneRef }: UseParallaxSceneProps )
 {
-	const { parallaxController } = useParallaxManagerContext();
+	// --- For debugging, delete in production ---
+	const { dispatch } = useParallaxDebugProviderContext();
+	// --- For debugging, delete in production ---
+
+	const { parallaxManager } = useParallaxManagerContext();
+	const { io } = usePronotronIOContext();
 
 	const [ scene, setScene ] = useState<ParallaxScene>();
 	const [ loaded, setLoaded ] = useState( 0 );
 	const [ sceneRect, setSceneRect ] = useState( { left: 0, top: 0, bottom: 0, width: 100, height: 100 } );
 
-	const sceneBuildRef = useRef<boolean>( false );
+	const sceneLoadRef = useRef<boolean>( false );
 
+	/**
+	 * Start loading of the ParallaxScene on mount
+	 */
 	useEffect( () => {
 
-		if ( sceneBuildRef.current ){
+		if ( sceneLoadRef.current ){
 			return;
 		}
 
-		sceneBuildRef.current = true;
+		sceneLoadRef.current = true;
 
 		const loadScene = async () => {
 			try {
-				const PARALLAX_SCENE = await parallaxController.initScene( sceneOptions, ( percent: number ) => {
+				
+				const PARALLAX_SCENE = await parallaxManager.initScene( { id, layers }, ( percent: number ) => {
 					setLoaded( percent );
 				} );
+				
 				setScene( PARALLAX_SCENE );
 				setLoaded( 100 );
+
+				// --- For debugging, delete in production ---
+				dispatch( { 
+					type: "add",
+					payload: { id: PARALLAX_SCENE.id, layers, controlRect, controlType, limitControl, isActive: true } 
+				} );
+				// --- For debugging, delete in production ---
+
 			} catch( error ){
 				throw error;
 			}
@@ -44,7 +68,7 @@ export function useParallaxScene( sceneOptions: ParallaxSceneOptions, sceneRef: 
 
 	/**
 	 * 'useLayoutEffect' runs synchronously before React mutates the DOM. 
-	 * This guarantees ro.disconnect() will execute while sceneElement is still attached.
+	 * This guarantees io.removeNode( sceneElement ) will execute while sceneElement is still attached.
 	 */
 	useLayoutEffect( () => {
 
@@ -52,175 +76,92 @@ export function useParallaxScene( sceneOptions: ParallaxSceneOptions, sceneRef: 
 
 		if ( ! scene || ! sceneElement ) return;
 
-		const ResizeObserver = window.ResizeObserver || Polyfill;
+		const modifySceneRect = () => {
 
-		const ro = new ResizeObserver( () => {
+			// Will be used in webgl scrissor
+			const { left, right, bottom, top } = sceneElement.getBoundingClientRect();
 
-			const rect = sceneElement.getBoundingClientRect();
+			const width  = right - left;
+			const height = bottom - top;
 
-			const width  = rect.right - rect.left;
-			const height = rect.bottom - rect.top;
-			const left   = rect.left;
-			const top = rect.top;
-			const bottom = window.innerHeight - rect.bottom;
+			// WebGL Y -1
+			const webglTop = window.innerHeight - bottom;
 
-			scene.setRect( { x: left, y: bottom, w: width, h: height } );
-			setSceneRect( { left, top, bottom, width, height } );
+			if ( controlRect && controlRect !== "self" ){
+				
+				if ( controlRect instanceof HTMLElement ){
 
-		} );
+					// ControlRect is Another HTML element
+					// Will be used in pointer normalization
+					const { left, right, bottom, top } = controlRect.getBoundingClientRect();
 
-		ro.observe( sceneElement );
+					const width  = right - left;
+					const height = bottom - top;
 
+
+					setSceneRect( { left, top, bottom, width, height } );
+
+				} else {
+
+					// ControlRect is Window
+					setSceneRect( { left: 0, top: 0, bottom: 0, width: window.innerWidth, height: window.innerHeight } );
+
+				}
+			} else {
+				// ControlRect is self
+				setSceneRect( { left, top, bottom, width, height } );
+			}
+
+			scene.setRect( { x: left, y: webglTop, w: width, h: height } );
+		};
+
+		const IONodeID = io.addNode({
+			ref: sceneElement,
+			onRemoveNode: () => {
+				// --- For debugging, delete in production ---
+				dispatch( { type: "delete", payload: { id: scene.id } } );
+				// parallaxManager.dispose( scene );
+				// --- For debugging, delete in production ---
+			},
+			dispatch: {
+				onEnter: () => {
+					scene.active = true;
+					// --- For debugging, delete in production ---
+					dispatch({ type: "change", payload: { id: scene.id, isActive: true } });
+					// --- For debugging, delete in production ---
+				},
+				onExit: () => {
+					scene.active = false;
+					// --- For debugging, delete in production ---
+					dispatch({ type: "change", payload: { id: scene.id, isActive: false } });
+					// --- For debugging, delete in production ---
+				},
+				onInViewport: () => {
+					modifySceneRect();
+				}
+			},
+			getBounds: () => {
+
+				const { top, bottom } = sceneElement.getBoundingClientRect();
+				
+				const start = top + window.scrollY;
+				const end = bottom + window.scrollY;
+
+				return { start, end };
+			},
+		});
+
+		// Initial rect
+		modifySceneRect();
+		
 		return () => {
-			ro.disconnect();
-			// Do not disposes scene for later usages
+			if ( IONodeID !== false ){
+				io.removeNode( sceneElement );
+			}
 			scene.active = false;
-		}
+		};
 
 	}, [ scene ] );
 
 	return { scene, sceneRect, loaded };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function useParallaxSceneRect( sceneRef: React.RefObject<HTMLDivElement> )
-{
-	const [ sceneRect, setSceneRect ] = useState( { left: 0, top: 0, bottom: 0, width: 100, height: 100 } );
-	
-	useEffect( () => {
-
-		const sceneElement = sceneRef.current;
-
-		if ( ! sceneElement ) return;
-
-		const ResizeObserver = window.ResizeObserver || Polyfill;
-
-		const ro = new ResizeObserver( () => {
-
-			const rect = sceneElement.getBoundingClientRect();
-
-			const width  = rect.right - rect.left;
-			const height = rect.bottom - rect.top;
-			const left   = rect.left;
-			const top = rect.top;
-			const bottom = window.innerHeight - rect.bottom;
-
-			setSceneRect( { left, top, bottom, width, height } );
-
-		} );
-
-		ro.observe( sceneElement );
-
-		return () => {
-			ro.disconnect();
-		}
-
-	}, [] );
-
-	return sceneRect;
-}
-
-
-
-
-type SceneRect = {
-    left: number;
-    top: number;
-    bottom: number;
-    width: number;
-    height: number;
-};
-type PointerComponentProps = {
-	sceneRect: SceneRect,
-	scene: ParallaxScene
-};
-function ParallaxScenePointer({ scene, sceneRect }: PointerComponentProps)
-{
-	const { pointerEasedPosition } = usePointerDataContext();
-
-	useEffect(() => {
-
-		let x = ( pointerEasedPosition.x - sceneRect.left ) / sceneRect.width;
-		let y = ( pointerEasedPosition.y - sceneRect.top ) / sceneRect.height;
-		
-		x = Math.min( Math.max( x, 0 ), 1 );
-		y = Math.min( Math.max( y, 0 ), 1 );
-
-		scene.setPointer( x, y );
-
-	}, [ sceneRect, pointerEasedPosition ]);
-
-	return null;
-}
-
-// function ParallaxScenePointerDelta({ scene, sceneRect }: PointerComponentProps)
-// {
-// 	const { pointerDelta } = usePointerDataContext();
-
-// 	useEffect(() => {
-
-// 		if ( pointerPosition.x < sceneRect.left ||  )
-
-// 		let x = ( pointerPosition.x - sceneRect.left ) / sceneRect.width;
-// 		let y = ( pointerPosition.y - sceneRect.top ) / sceneRect.height;
-		
-// 		x = Math.min( Math.max( scene.pointer, 0 ), 1 );
-// 		y = Math.min( Math.max( y, 0 ), 1 );
-
-// 		scene.setPointer( x, y );
-
-// 	}, [ sceneRect, pointerEasedPosition ]);
-
-// 	return null;
-// }

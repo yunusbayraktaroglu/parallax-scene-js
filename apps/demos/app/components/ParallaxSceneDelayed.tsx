@@ -1,24 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type ParallaxSceneOptions } from "@pronotron/parallax-scene-js";
 
-import { usePointerContext } from "../hooks/PointerProvider";
-import { ParallaxScene } from "./ParallaxScene";
+import { usePointerContext } from "@/app/providers/PointerProvider";
+import { ParallaxSceneProps, ParallaxScene } from "./ParallaxScene";
 
-type ParallaxSceneDelayedProps = ParallaxSceneOptions & {
+interface ParallaxSceneDelayedProps extends ParallaxSceneProps {
 	/**
-	 * Scene load will be waiting for given seconds
+	 * The scene load will wait for the specified number of seconds.
 	 */
 	delay: number;
 };
 
-export function ParallaxSceneDelayed( { id, layers, delay }: ParallaxSceneDelayedProps )
+export function ParallaxSceneDelayed( { id, layers, controlType, delay }: ParallaxSceneDelayedProps )
 {
 	const { animatorRef } = usePointerContext();
 
 	const [ displayScene, setDisplayScene ] = useState( false );
-	const [ countdown, setCountDown ] = useState( 0 );
+	const [ countdown, setCountDown ] = useState( delay );
 
 	useEffect( () => {
 
@@ -27,8 +26,8 @@ export function ParallaxSceneDelayed( { id, layers, delay }: ParallaxSceneDelaye
 		if ( ! animator ) return;
 
 		animator.add( {
-			id: "Countdown",
-			duration: 5.0,
+			id,
+			duration: delay,
 			autoPause: true,
 			onRender: ( currentTime, startTime, duration ) => {
 				const remaining = duration - Math.floor( currentTime - startTime );
@@ -44,13 +43,13 @@ export function ParallaxSceneDelayed( { id, layers, delay }: ParallaxSceneDelaye
 
 	if ( ! displayScene ){
 		return (
-			<div className="border parallaxScene flex items-center justify-center text-center">
+			<div className="border flex items-center justify-center text-center">
 				<div className="label p-spacing-sm rounded-xl bg-white">
-					<h1 className="text-black text-sm">{ countdown }</h1>
+					<h1 className="w-16 h-auto">{ countdown }</h1>
 				</div>
 			</div>
 		)
 	}
 
-	return <ParallaxScene id={ id } layers={ layers } />;
+	return <ParallaxScene id={ id } layers={ layers } controlType={ controlType } />;
 }
