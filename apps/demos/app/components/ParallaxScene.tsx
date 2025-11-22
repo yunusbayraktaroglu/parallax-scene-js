@@ -48,19 +48,12 @@ export function ParallaxScene({ id, layers, controlType = 'standard', controlRec
 
 	return (
 		<div ref={ sceneRef } className="parallaxScene flex w-full h-full items-center justify-center text-center">
-			{ ! scene ? (
-				<div className="label p-spacing-sm rounded-xl bg-white">
-					<LoadingBar loaded={ loaded } />
-					<h1 className="text-sm">Scene { id }</h1>
-				</div>
-			) : 
+			{ ! scene ? <LoadingBar loaded={ loaded } sceneID={ id } /> : 
 			( controlType === "glide" && <SceneGlidePointer {...{ scene, sceneRect, sceneRef, limitControl }} /> ) ||
 			( controlType === "standard" && <SceneStandardPointer {...{ scene, sceneRect, sceneRef, limitControl }} /> ) }
 		</div>
 	);
 }
-
-
 
 type SceneRect = {
     left: number;

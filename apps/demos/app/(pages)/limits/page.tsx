@@ -40,8 +40,8 @@ export default function LimitsPage()
 				id="#limits-scene" 
 				layers={ SCENE_01_LAYERS }
 				controlType="standard"
-				controlRect="window"
-				limitControl={ true } 
+				// controlRect="window"
+				limitControl={ false }
 			/>
 		</main>
 	);
