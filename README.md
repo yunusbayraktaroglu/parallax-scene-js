@@ -79,7 +79,7 @@ See [CONTRIBUTING ↗](.github/CONTRIBUTING.md)
 
 [npm]: https://img.shields.io/npm/v/@pronotron/parallax-scene-js
 [npm-url]: https://www.npmjs.com/package/@pronotron/parallax-scene-js
-[build-size]: https://badgen.net/bundlephobia/minzip/@pronotron/parallax-scene-js
+[build-size]: https://img.shields.io/bundlephobia/minzip/@pronotron/parallax-scene-js
 [build-size-url]: https://bundlephobia.com/result?p=@pronotron/parallax-scene-js
 [codecov-parallax-scene-js]: https://codecov.io/gh/yunusbayraktaroglu/parallax-scene-js/branch/main/graph/badge.svg
 [codecov-parallax-scene-js-url]: https://app.codecov.io/gh/yunusbayraktaroglu/parallax-scene-js

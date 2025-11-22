@@ -5,38 +5,38 @@
 @tailwind utilities;
 
 @utility fluid {
-  font-size: var(--fluid-3);
-  line-height: 1.5;
+	font-size: var(--fluid-3);
+	line-height: 1.5;
 }
 
 @theme {
-  /* Breakpoints (orientation-based) */
-  --screen-portrait: (orientation: portrait);
-  --screen-landscape: (orientation: landscape);
+	/* Breakpoints (orientation-based) */
+	--screen-portrait: (orientation: portrait);
+	--screen-landscape: (orientation: landscape);
 
-  /* Spacing tokens */
-  --spacing-content-outside-width: var(--content-outside-width);
-  --spacing-spacing-xs: var(--spacing-xs);
-  --spacing-spacing-sm: var(--spacing-sm);
-  --spacing-spacing-base: var(--spacing-base);
-  --spacing-spacing-lg: var(--spacing-lg);
-  --spacing-spacing-xl: var(--spacing-xl);
-  --spacing-spacing-2xl: var(--spacing-2xl);
-  --spacing-spacing-3xl: var(--spacing-3xl);
+	/* Spacing tokens */
+	--spacing-content-outside-width: var(--content-outside-width);
+	--spacing-spacing-xs: var(--spacing-xs);
+	--spacing-spacing-sm: var(--spacing-sm);
+	--spacing-spacing-base: var(--spacing-base);
+	--spacing-spacing-lg: var(--spacing-lg);
+	--spacing-spacing-xl: var(--spacing-xl);
+	--spacing-spacing-2xl: var(--spacing-2xl);
+	--spacing-spacing-3xl: var(--spacing-3xl);
 
-  /* Colors */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+	/* Colors */
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
 
-  /* Font sizes */
-  --text-xs: var(--fluid-1);
-  --text-sm: var(--fluid-2);
-  --text-base: var(--fluid-3);
-  --text-lg: var(--fluid-4);
-  --text-xl: var(--fluid-5);
-  --text-2xl: var(--fluid-6);
-  --text-3xl: var(--fluid-7);
-  --text-4xl: var(--fluid-8);
+	/* Font sizes */
+	--text-xs: var(--fluid-1);
+	--text-sm: var(--fluid-2);
+	--text-base: var(--fluid-3);
+	--text-lg: var(--fluid-4);
+	--text-xl: var(--fluid-5);
+	--text-2xl: var(--fluid-6);
+	--text-3xl: var(--fluid-7);
+	--text-4xl: var(--fluid-8);
 }
 
 /* === Base Layer === */
@@ -111,9 +111,8 @@ body {
 }
 
 body * {
-	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23FFFFFF" width="6px" height="6px" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.5"/></svg>') 3 3, auto !important;
+	cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23FFFFFF" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke="%23000000" stroke-width="1" /></svg>') 12 12, auto !important;
 }
-
 
 /**
 	----------------------------------------------------------------------
@@ -159,8 +158,7 @@ body * {
 [data-holded="0"] {
 }
 [data-holded="1"] {
-	pointer-events: none;
-	background-color: black;
+	/* pointer-events: none; */
 }
 
 @layer components {
@@ -174,13 +172,13 @@ body * {
 
 	@keyframes pulse-bg {
 		0% {
-			background-color: rgba( 255, 255, 255, 0.9 );
+			background-color: rgba( 255, 255, 255, 1 );
 		}
 		50% {
 			background-color: rgba( 255, 0, 0, 0 );
 		}
 		100% {
-			background-color: rgba( 255, 255, 255, 0.9 );
+			background-color: rgba( 255, 255, 255, 1 );
 		}
 	}
 
@@ -192,7 +190,7 @@ body * {
 	}
 
 	.pointer {
-		--cursor-size: max( 50px, calc( 100vw / 30 ) );
+		--cursor-size: max( 60px, calc( 100vw / 30 ) );
 		--cursor-half-size: calc( var( --cursor-size ) / 2 );
 		--scale: 1;
 		--transition-duration: 0.4s;
@@ -238,12 +236,12 @@ body * {
 
 	.pointer[ data-state="HOLDING" ],
 	.pointer[ data-state="HOLD_DRAGGING" ] {
-		--background-color: rgba( 255, 255, 255, 0.5 );
+		--background-color: rgba( 255, 0, 0, 1.0 );
 		--scale: 1.25;
 	}
 
 	.pointer[ data-state="HOLD_DRAGGING" ] {
-		--border-color: rgba( 168, 85, 247, 1.0 );
+		--border-color: rgba( 255, 255, 255, 1.0 );
 	}
 
 	.pointer[ data-interactable="true" ] {

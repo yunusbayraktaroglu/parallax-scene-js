@@ -1,19 +1,17 @@
-"use client";
-
-import { useState } from "react";
 import { ExpandIcon, CloseIcon } from "./SiteSVG";
 
 interface HideableRowProps {
 	title: string;
-	expand?: boolean;
+	description?: string;
+	expand: boolean;
+	setExpand: ( isExpanded: boolean ) => void;
 	children: React.ReactNode;
 };
 
-export function Expandable({ expand = true, title, children, ...divProps }: HideableRowProps & React.ComponentProps<"div">)
+export function Expandable({ title, description, expand, setExpand, children, ...divProps }: HideableRowProps & React.ComponentProps<"div">)
 {
-	const [ expandState, setExpandState ] = useState<boolean>( expand );
-	const ariaExpanded = expandState ? 'true' : 'false';
-	const opacity = ! expandState ? " opacity-50" : "";
+	const ariaExpanded = expand ? 'true' : 'false';
+	const opacity = ! expand ? " opacity-50" : "";
 
 	return (
 		<div className={ "container flex flex-col py-spacing-sm landscape:py-spacing-sm" + opacity } { ...divProps }>
@@ -24,15 +22,18 @@ export function Expandable({ expand = true, title, children, ...divProps }: Hide
 					aria-label='Open Menu'
 					aria-expanded={ ariaExpanded }
 					className='flex justify-between items-center w-full p-spacing-sm group'
-					onClick={() => setExpandState(( prev ) => ! prev )}
+					onClick={ () => setExpand( ! expand ) }
 				>
-					<h3 className="text-sm leading-none">{ title }</h3>
+					<div className="text-left mr-1">
+						<h3 className="text-base leading-none font-bold">{ title }</h3>
+						{ ( description && ! expand ) && <p className="text-xs leading-none opacity-60 mt-1">{ description }</p> }
+					</div>
 					<span className='sr-only'>Open main menu</span>
 					<ExpandIcon className='h-5 w-5 hidden group-aria-[expanded=false]:block' fill='none' viewBox='0 0 24 24' strokeWidth='1.5' stroke='currentColor' aria-hidden='true' />
 					<CloseIcon className='h-5 w-5 hidden group-aria-[expanded=true]:block' fill='none' viewBox='0 0 24 24' strokeWidth='1.5' stroke='currentColor' aria-hidden='true' />
 				</button>
 			</div>
-			{ expandState && children }
+			{ expand && children }
 		</div>
 	);
 }
