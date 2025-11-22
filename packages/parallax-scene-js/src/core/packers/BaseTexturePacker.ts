@@ -98,32 +98,48 @@ export abstract class BaseTexturePacker
 	 * @returns A combined ImageBitmap ready for uploading to GPU.
 	 * @internal
 	 */
-	async _mergeImagesWithCanvas( packResult: PackResult, useOffscreen = true, canvasSettings?: CanvasRenderingContext2DSettings ): Promise<ImageBitmap>
+	async _mergeImagesWithCanvas( packResult: PackResult, useOffscreen = true, canvasSettings?: CanvasRenderingContext2DSettings ): Promise<{
+		mergedImage: ImageBitmap;
+		finalPackResult: PackResult
+	}>
 	{
 		const maxSize = Math.max( packResult.size.w, packResult.size.h );
 
-		let finalWidth: number;
-		let finalHeight: number;
-		let ratio = 1.0;
+		// Resize pack result depends on device MAX_TEXTURE_SIZE
+		let finalPackResult: PackResult;
 
 		if ( this._maxTextureSize < maxSize ){
-			ratio = this._maxTextureSize / maxSize;
-			finalWidth = packResult.size.w * ratio;
-			finalHeight = packResult.size.h * ratio;
+
+			const ratio = this._maxTextureSize / maxSize;
+
+			finalPackResult = {
+				size: {
+					w: packResult.size.w * ratio,
+					h: packResult.size.h * ratio
+				},
+				atlas: packResult.atlas.map( atlas => ( {
+					...atlas, // Keep normalized data and source as it is
+					x: atlas.x * ratio,
+					y: atlas.y * ratio,
+					w: atlas.w * ratio,
+					h: atlas.h * ratio
+				} ) )
+			};
+
 		} else {
-			finalWidth = packResult.size.w;
-			finalHeight = packResult.size.h;
+			finalPackResult = packResult;
 		}
 
-		const { canvas, context } = this._getCanvas( finalWidth, finalHeight, useOffscreen, canvasSettings );
+		const { canvas, context } = this._getCanvas( finalPackResult.size.w, finalPackResult.size.h, useOffscreen, canvasSettings );
 
-		for ( const atlas of packResult.atlas ){
+		for ( const atlas of finalPackResult.atlas ){
 			context.drawImage( atlas.source, atlas.x, atlas.y, atlas.w, atlas.h );
 		}
 
 		const options: ImageBitmapOptions = { premultiplyAlpha: 'none', colorSpaceConversion: 'none' };
+		const mergedImage = await createImageBitmap( canvas, options );
 
-		return await createImageBitmap( canvas, options );
+		return { mergedImage, finalPackResult };
 	}
 
 	/**
