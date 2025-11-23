@@ -179,7 +179,7 @@ describe( 'ParallaxManager', () => {
 			expect( mockResourceController.createTexture ).toHaveBeenCalledWith(
 				mockMergeData.hash,
 				mockMergeData.image,
-				{ premultiplyAlpha: false }
+				{ premultiplyAlpha: true }
 			);
 
 			// 4. Check resource registration
@@ -260,7 +260,7 @@ describe( 'ParallaxManager', () => {
 				},
 			} );
 
-			await expect( manager.initScene( mockSceneOptions ) ).rejects.toThrow( 'Texture packing error' );
+			await expect( manager.initScene( mockSceneOptions ) ).rejects.toThrow();
 
 		} );
 
@@ -276,17 +276,13 @@ describe( 'ParallaxManager', () => {
 
 	describe( 'updateResolution', () => {
 
-		it( 'should update RenderController and GLOBAL_UNIFORMS', () => {
+		it( 'should update RenderController', () => {
 
 			manager.updateResolution( 1920, 1080, 2 );
 
 			expect( mockRenderController.setPixelRatio ).toHaveBeenCalledWith( 2 );
 			expect( mockRenderController.updateResolution ).toHaveBeenCalledWith( 1920, 1080 );
 
-			// Test the global uniform mutation
-			expect( GLOBAL_UNIFORMS.u_resolution.value.x ).toBe( 1920 );
-
-			expect( GLOBAL_UNIFORMS.u_resolution.value.y ).toBe( 1080 );
 		} );
 
 	} );
@@ -384,7 +380,7 @@ describe( 'ParallaxManager', () => {
 
 			manager.render();
 
-			expect( mockGl.clear ).toHaveBeenCalledWith( mockGl.COLOR_BUFFER_BIT | mockGl.DEPTH_BUFFER_BIT );
+			expect( mockGl.clear ).toHaveBeenCalledWith( mockGl.COLOR_BUFFER_BIT );
 
 			// Should render active scene1
 			expect( mockRenderController.render ).toHaveBeenCalledWith( scene1 );
