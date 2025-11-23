@@ -51,8 +51,8 @@ export default function IntersectionPage()
 	return (
 		<main className="w-full p-spacing-lg space-y-spacing-lg">
 			<div className="bg-slate-300 p-spacing-lg py-[20vh] rounded-4xl space-y-spacing-xs">
-				<h1>This is an observing demo</h1>
-				<p>Parallax Scenes can be appear anywhere on the screen. Following parallax-scenes will be stop rendering when they are not visible. See `Scenes Debug`.</p>
+				<h1>This is an intersection demo.</h1>
+				<p>Parallax scenes can appear anywhere on the screen. Scenes outside the viewport stop rendering automatically. See `Scenes Debug`.</p>
 				<p>Utilizes <a className="text-link" href="https://www.npmjs.com/package/@pronotron/io" target="_blank">@pronotron/io</a></p>
 			</div>
 			<div className="flex">

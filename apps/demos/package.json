@@ -21,7 +21,6 @@
 		"react-dom": "^19.2.0"
 	},
 	"devDependencies": {
-	
 		"@pronotron/config-eslint": "*",
 		"@pronotron/config-ts": "*",
 		"@types/react": "19.2.2",

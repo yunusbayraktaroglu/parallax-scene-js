@@ -35,7 +35,7 @@ const SCENE_01_LAYERS: ParallaxSceneLayer[] = [
 export default function LimitsPage()
 {
 	return (
-		<main className="flex h-full w-full p-spacing-lg">
+		<main className="flex h-full w-full p-spacing-base landscape:p-spacing-xl">
 			<ParallaxScene 
 				id="#limits-scene" 
 				layers={ SCENE_01_LAYERS }
