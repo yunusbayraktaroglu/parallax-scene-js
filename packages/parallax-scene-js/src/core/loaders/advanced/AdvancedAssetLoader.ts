@@ -129,6 +129,9 @@ export class AdvancedAssetLoader
 	 */
 	private _calculateTotalLoadSize( images: LoadRequest[] )
 	{
+		// Scene layers might have the same image. (eg: using light.png multiple layers)
+		const seen = new Set<string>();
+
 		return images.reduce( ( total, image ) => {
 
 			// This method should only be called if all the layers has sizeInBytes property
@@ -136,6 +139,11 @@ export class AdvancedAssetLoader
 				throw new Error( `Layer "${ image.url }" is missing the sizeInBytes property.` );
 			}
 
+			if ( seen.has( image.url ) ){
+				return total; 
+			}
+
+			seen.add( image.url );
 			return total + image.sizeInBytes;
 
 		}, 0 );
