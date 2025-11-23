@@ -23,10 +23,11 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 	/**
 	 * Represents the loader options.
 	 *
-	 * @default {premultiplyAlpha:'none'}
+	 * @default {premultiplyAlpha:'none',colorSpaceConversion:'none'}
 	 */
 	options: ImageBitmapOptions = { 
-		premultiplyAlpha: 'none' 
+		premultiplyAlpha: 'none',
+		colorSpaceConversion: 'none'
 	};
 
 	/**
@@ -122,7 +123,7 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 
 		} ).then( ( blob ) => {
 
-			return createImageBitmap( blob, Object.assign( this.options, { colorSpaceConversion: 'none' } ) );
+			return createImageBitmap( blob, this.options );
 
 		} ).then( ( imageBitmap ) => {
 
