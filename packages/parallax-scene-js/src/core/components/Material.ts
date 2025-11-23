@@ -4,6 +4,9 @@ import { GLOBAL_UNIFORMS } from '../controllers/RenderController';
 
 /**
  * Defines basic shading configuration for a material.
+ * 
+ * @todo
+ * complete shading settings
  */
 type ShadingSettings = {
 	/**
@@ -64,6 +67,7 @@ export class Material
 
 	/**
 	 * WebGL program information generated after shader compilation and linking.
+	 * It needs to be created by RenderController.
 	 */
 	programInfo?: ProgramInfo;
 

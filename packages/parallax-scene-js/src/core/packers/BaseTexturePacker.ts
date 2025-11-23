@@ -176,9 +176,10 @@ export abstract class BaseTexturePacker
 	 * @param image - ImageBitmap to display.
 	 * @param settings - Optional 2D context settings for the debug canvas.
 	 * @throws Error if the 2D context cannot be obtained.
+	 * 
 	 * @internal
 	 */
-	displayImageBitmapOnScreen( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
+	_displayImageBitmapOnScreen( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
 	{
 		const canvas = document.createElement( "canvas" );
 		const context = canvas.getContext( "2d", settings );
