@@ -89,7 +89,7 @@ export class BufferHelper
 
 	/**
 	 * Should be called if given attribute has been changed.
-	 * Updates the {@link BufferStorage} blong to attribute or creates it.
+	 * Updates the {@link BufferStorage} belong to attribute or creates it.
 	 * 
 	 * @param attribute
 	 * @param bufferType

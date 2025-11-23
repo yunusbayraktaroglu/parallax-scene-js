@@ -36,7 +36,8 @@ export class AdvancedBitmapLoader extends Loader<ImageBitmap>
 	 * Represents the loader options.
 	 */
 	options: ImageBitmapOptions = { 
-		premultiplyAlpha: 'none' 
+		premultiplyAlpha: 'none',
+		colorSpaceConversion: 'none'
 	};
 
 	abort(){ return this; }
@@ -73,10 +74,7 @@ export class AdvancedBitmapLoader extends Loader<ImageBitmap>
 				if ( blob instanceof Blob ){
 
 					// Success: Create an ImageBitmap
-					const imageBitmap = await createImageBitmap( blob, {
-						...this.options,
-						colorSpaceConversion: 'none'
-					} );
+					const imageBitmap = await createImageBitmap( blob, this.options );
 
 					onLoad?.( imageBitmap );
 

@@ -4,6 +4,9 @@ import { GLOBAL_UNIFORMS } from '../controllers/RenderController';
 
 /**
  * Defines basic shading configuration for a material.
+ * 
+ * @todo
+ * complete shading settings
  */
 type ShadingSettings = {
 	/**
@@ -64,6 +67,7 @@ export class Material
 
 	/**
 	 * WebGL program information generated after shader compilation and linking.
+	 * It needs to be created by RenderController.
 	 */
 	programInfo?: ProgramInfo;
 
@@ -101,14 +105,13 @@ export class Material
 
 
 import vertexShader from '../shaders/vertex.glsl';
-import vertexClipSpace from '../shaders/vertex-clipspace.glsl';
 import fragmentShader from '../shaders/fragment.glsl';
 
 /**
  * Default material used for basic rendering operations.
  */
 export const DEFAULT_MATERIAL = new Material( { 
-	vertex: vertexClipSpace,
+	vertex: vertexShader,
 	fragment: fragmentShader,
 	transparent: true,
 	uniforms: {

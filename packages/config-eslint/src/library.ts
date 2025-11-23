@@ -1,7 +1,7 @@
 import type { Linter } from "eslint";
 import stylistic from '@stylistic/eslint-plugin';
 
-import { baseConfig } from "./base";
+import { baseConfig } from "./base.js";
 
 /**
  * A shared TS library configuration for the packages.
