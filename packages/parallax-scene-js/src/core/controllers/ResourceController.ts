@@ -5,6 +5,7 @@ import { SkylineTexturePacker } from "../packers/SkylineTexturePacker";
 import { type MergeResult } from "../packers/BaseTexturePacker";
 
 import { generateGroupHash } from "../helpers/hashCreator";
+import { isPremultipliedImage } from "../helpers/isPremultiplied";
 
 /**
  * Represents a downloaded image with its source URL and decoded bitmap.
@@ -18,8 +19,8 @@ export type ImageDownloadResult = {
  * Dependencies required for ResourceController operation.
  */
 export type ResourceControllerDeps = {
-	textureHelper: TextureHelper
-	packer: BinaryTreeTexturePacker; // | SkylineTexturePacker
+	texturePacker: BinaryTreeTexturePacker | SkylineTexturePacker;
+	textureHelper: TextureHelper;
 };
 
 /**
@@ -53,34 +54,20 @@ export class ResourceController
 	private _textureHelper: TextureHelper;
 
 	/**
-	 * Maximum texture size from GL context.
-	 * @internal
-	 */
-	private _maxTextureSize: number = 0;
-
-	/**
 	 * Packs multiple images into one large atlas.
 	 * @internal
 	 */
-	private _binaryTreeTexturePacker: BinaryTreeTexturePacker;
+	private _texturePacker: BinaryTreeTexturePacker | SkylineTexturePacker;
 
-	/**
-	 * Fixed atlas size of 8192 used instead of MAX_TEXTURE_SIZE to avoid texture normalization inconsistencies
-	 * 
-	 * @param dependencies WebGL rendering context used for texture operations.
-	 */
 	constructor( dependencies: ResourceControllerDeps )
 	{
 		this._textureHelper = dependencies.textureHelper;
-		/**
-		 * @bug 
-		 * Using this._maxTextureSize causes atlas normalization errors during texture packing.
-		 */
-		this._binaryTreeTexturePacker = dependencies.packer;
+		this._texturePacker = dependencies.texturePacker;
 	}
 
 	/**
 	 * Creates and caches a WebGL texture using the provided image and options. {@link TextureOptions}
+	 * Will return previosly created Texture if given HASH found in the cache.
 	 * 
 	 * @param hash Unique identifier for deduplication
 	 * @param imageBitmap The image data used to create the texture.
@@ -152,7 +139,7 @@ export class ResourceController
 	async merge( imageBitmaps: ImageDownloadResult[], canvasSettings: CanvasRenderingContext2DSettings = { alpha: true } ): Promise<MergeResult & { hash: string }>
 	{
 		// A scene may have different layers with same image source
-		// Remove duplicates to merge only unique image sources.
+		// Removes duplicates to merge only unique image sources.
 		const uniqueMap = new Map( imageBitmaps.map( item => [ item.url, item ] ) );
 		const uniqueImageBitmaps = [ ...uniqueMap.values() ];
 
@@ -166,12 +153,16 @@ export class ResourceController
 			const packerData = uniqueImageBitmaps.map( file => ( { id: file.url, source: file.file } ) );
 			
 			// Start packing
-			const packResult = this._binaryTreeTexturePacker.pack( packerData );
-			const mergedImage = await this._binaryTreeTexturePacker._mergeImagesWithCanvas( packResult, true, canvasSettings );
+			const packResult = this._texturePacker.pack( packerData );
+			const { mergedImage, finalPackResult } = await this._texturePacker._mergeImagesWithCanvas( packResult, true, canvasSettings );
 
-			this._mergedImages.set( HASH, { image: mergedImage, data: packResult, hash: HASH } );
+			// Appends texture in document.body to debug
+			// this._drawImageOnCanvas( mergedImage );
+			// console.log( finalPackResult );
 			
-			return { image: mergedImage, data: packResult, hash: HASH };
+			this._mergedImages.set( HASH, { image: mergedImage, data: finalPackResult, hash: HASH } );
+			
+			return { image: mergedImage, data: finalPackResult, hash: HASH };
 
 		} catch( error ){
 
@@ -185,10 +176,12 @@ export class ResourceController
 	 * 
 	 * @param image The image to draw.
 	 * @param settings Optional canvas rendering settings.
+	 * 
+	 * @internal
 	 */
-	drawImageOnCanvas( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
+	private _drawImageOnCanvas( image: ImageBitmap, settings?: CanvasRenderingContext2DSettings )
 	{
-		this._binaryTreeTexturePacker.displayImageBitmapOnScreen( image, { alpha: false } );
+		this._texturePacker.displayImageBitmapOnScreen( image, { alpha: true } );
 	}
 
 }
