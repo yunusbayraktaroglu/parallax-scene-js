@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { ParallaxScene as PType, type ParallaxSceneOptions } from "@pronotron/parallax-scene-js";
 
 import { usePointerDataContext } from "@/app/providers/PointerDataProvider";
@@ -46,16 +46,32 @@ export function ParallaxScene({ id, layers, controlType = 'standard', controlRec
 	
 	const { scene, sceneRect, loaded } = useParallaxScene( { sceneRef, id, layers, controlType, controlRect, limitControl } );
 
+	const pointer = useMemo( () => {
+
+		if ( ! scene || ! sceneRect ) return null;
+
+		const pointerProps = { scene, sceneRect, sceneRef, limitControl } as const;
+
+		switch ( controlType )
+		{
+			case "glide":
+				return <SceneGlidePointer { ...pointerProps } />;
+			case "standard":
+			default:
+				return <SceneStandardPointer { ...pointerProps } />;
+		};
+
+	}, [ scene, sceneRect, controlType, limitControl, sceneRef ] );
+
 	return (
 		<div ref={ sceneRef } className="parallaxScene flex w-full h-full items-center justify-center text-center">
-			{ ! scene ? <LoadingBar loaded={ loaded } sceneID={ id } /> : 
-			( controlType === "glide" && <SceneGlidePointer {...{ scene, sceneRect, sceneRef, limitControl }} /> ) ||
-			( controlType === "standard" && <SceneStandardPointer {...{ scene, sceneRect, sceneRef, limitControl }} /> ) }
+			{/* Wait for sceneRect that helps to start with correct pointer start position */}
+			{ ( ! scene || ! sceneRect ) ? <LoadingBar loaded={ loaded } sceneID={ id } /> : pointer }
 		</div>
 	);
 }
 
-type SceneRect = {
+export type SceneRect = {
     left: number;
     top: number;
     bottom: number;
@@ -96,7 +112,7 @@ function SceneStandardPointer({ scene, sceneRect, sceneRef, limitControl }: Scen
 		sceneEasedPointerRef.current.x = Math.min( Math.max( sceneEasedPointerRef.current.x, 0 ), 1 );
 		sceneEasedPointerRef.current.y = Math.min( Math.max( sceneEasedPointerRef.current.y, 0 ), 1 );
 
-		scene.setPointer( sceneEasedPointerRef.current.x, sceneEasedPointerRef.current.y );
+		//scene.setPointer( sceneEasedPointerRef.current.x, sceneEasedPointerRef.current.y );
 
 	}, [ sceneRect, pointerPosition ] );
 
@@ -107,7 +123,7 @@ function SceneStandardPointer({ scene, sceneRect, sceneRef, limitControl }: Scen
 
 function SceneGlidePointer({ scene, sceneRect, sceneRef, limitControl }: ScenePointerProps )
 {
-	const { pointerDeltaAdditive, pointerEasedPosition } = usePointerDataContext();
+	const { pointerDeltaAdditive, pointerPosition } = usePointerDataContext();
 	const { pointerController } = usePointerContext();
 
 	/**
@@ -128,7 +144,7 @@ function SceneGlidePointer({ scene, sceneRect, sceneRef, limitControl }: ScenePo
 
 		scene.setPointer( x, y );
 
-	}, [ sceneRect, pointerEasedPosition ] );
+	}, [ sceneRect, pointerPosition ] );
 
 	return null;
 }

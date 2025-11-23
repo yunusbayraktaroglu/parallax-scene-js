@@ -18,26 +18,37 @@ export const useParallaxManagerContext = () => {
 	return context;
 };
 
-export function PronotronParallaxManagerProvider({ children }: { children: React.ReactNode })
+export function PronotronParallaxManagerProvider( { children }: { children: React.ReactNode } )
 {
 	const canvasRef = useRef<HTMLCanvasElement>( null );
+	const canvasWrapperRef = useRef<HTMLDivElement>( null );
+
 	const [ parallaxManager, setParallaxManager ] = useState<ParallaxManager | null>( null );
 
+	/**
+	 * 'useLayoutEffect' runs synchronously before React mutates the DOM. 
+	 * This guarantees ro.disconnect() will execute while canvasWrapperElement is still attached.
+	 */
 	useLayoutEffect( () => {
 
-		if ( ! canvasRef.current ) return;
+		const canvasElement = canvasRef.current;
+		const canvasWrapperElement = canvasWrapperRef.current;
+
+		if ( ! canvasElement || ! canvasWrapperElement ) return;
 
 		// Create parallax manager
 		const parallaxManager = createParallaxManager( {
-			canvas: canvasRef.current,
+			canvas: canvasElement,
 			version: "2",
 			attributes: {
 				alpha: false,
 				depth: false,
 				stencil: false,
-				premultipliedAlpha: true
+				premultipliedAlpha: false
 			},
 			loader: "advanced",
+			// texturePacker: "skyline"
+			// maxTextureSize: 1024 * 2
 		} );
 
 		setParallaxManager( parallaxManager );
@@ -45,12 +56,12 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 		// Connect resize observer
 		const ResizeObserver = window.ResizeObserver || Polyfill;
 
-		const ro = new ResizeObserver( ( entries, observer ) => {
-			const { clientWidth, clientHeight } = canvasRef.current!;
-			parallaxManager.updateResolution( clientWidth, clientHeight );
+		const ro = new ResizeObserver( () => {
+			const { clientWidth, clientHeight } = canvasWrapperElement;
+			parallaxManager.updateResolution( clientWidth, clientHeight, window.devicePixelRatio || 1 );
 		} );
 
-		ro.observe( canvasRef.current );
+		ro.observe( canvasWrapperElement );
 
 		return () => {
 			ro.disconnect();
@@ -80,7 +91,10 @@ export function PronotronParallaxManagerProvider({ children }: { children: React
 
 	return (
 		<>
-			<canvas ref={ canvasRef } className="flex w-full h-full fixed left-0 top-0 z-[-1]" />
+			{/* Using a wrapper helps us to set PX dimensions to the <canvas> element */}
+			<div id="canvas_wrapper" ref={ canvasWrapperRef } className="fixed flex w-full h-full left-0 top-0 z-[-50]">
+				<canvas ref={ canvasRef } />
+			</div>
 			{ parallaxManager && (
 				<ParallaxManagerContext value={{ parallaxManager }}>
 					{ children	}

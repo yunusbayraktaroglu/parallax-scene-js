@@ -7,7 +7,7 @@ import { useParallaxManagerContext } from "@/app/providers/ParallaxManagerProvid
 import { usePronotronIOContext } from "@/app/providers/PronotronIOProvider";
 import { useParallaxDebugProviderContext } from "@/app/providers/ParallaxDebugProvider";
 
-import { ParallaxSceneProps } from "@/app/components/ParallaxScene";
+import { ParallaxSceneProps, SceneRect } from "@/app/components/ParallaxScene";
 
 // All the data should be assigned before to use that hook
 type UseParallaxSceneProps = Required<ParallaxSceneProps & {
@@ -25,7 +25,7 @@ export function useParallaxScene( { id, layers, controlType, controlRect, limitC
 
 	const [ scene, setScene ] = useState<ParallaxScene>();
 	const [ loaded, setLoaded ] = useState( 0 );
-	const [ sceneRect, setSceneRect ] = useState( { left: 0, top: 0, bottom: 0, width: 100, height: 100 } );
+	const [ sceneRect, setSceneRect ] = useState<SceneRect>( null ! );
 
 	const sceneLoadRef = useRef<boolean>( false );
 
@@ -44,11 +44,14 @@ export function useParallaxScene( { id, layers, controlType, controlRect, limitC
 			try {
 				
 				const PARALLAX_SCENE = await parallaxManager.initScene( { id, layers }, ( percent: number ) => {
-					setLoaded( percent );
+					setLoaded( Math.round( percent ) );
 				} );
 				
-				setScene( PARALLAX_SCENE );
 				setLoaded( 100 );
+
+				setTimeout(() => {
+					setScene( PARALLAX_SCENE );
+				}, 50 );
 
 				// --- For debugging, delete in production ---
 				dispatch( { 

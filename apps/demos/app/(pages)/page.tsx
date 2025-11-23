@@ -47,7 +47,7 @@ const HOME_PAGE_SCENE_LAYERS: ParallaxSceneLayer[] = [
 export default function HomePage()
 {
 	return (
-		<main className="flex h-full w-full p-spacing-xl">
+		<main className="flex h-full w-full p-spacing-base landscape:p-spacing-xl">
 			<ParallaxScene 
 				layers={ HOME_PAGE_SCENE_LAYERS } 
 				id="#home-scene" 

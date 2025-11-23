@@ -13,7 +13,7 @@ import { ParallaxScenesDebug } from "./ParallaxScenesDebug";
 export function SiteHeader()
 {
 	return (
-		<div className="fixed w-1/2 max-w-[150px] landscape:max-w-[200px] m-spacing-sm space-y-spacing-xs z-50">
+		<div className="fixed top-0 left-0 w-1/2 max-w-[150px] landscape:max-w-[200px] m-spacing-sm space-y-spacing-xs z-50">
 			<SiteNavigation />
 			<ParallaxScenesDebug />
 		</div>
@@ -56,7 +56,7 @@ function SiteNavigation()
 	return (
 		<Expandable 
 			title="Examples"
-			className="bg-white top-0 right-0 rounded-xl overflow-hidden"
+			className="bg-white rounded-xl overflow-hidden"
 			description={ demos.find( demo => demo.href === pathname )?.title }
 			expand={ isExpanded }
 			setExpand={ setIsExpanded }

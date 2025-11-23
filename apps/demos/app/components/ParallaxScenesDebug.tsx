@@ -11,7 +11,7 @@ export function ParallaxScenesDebug()
 	return (
 		<Expandable 
 			title="Scenes Debug"
-			className="bg-white top-0 left-0 rounded-xl overflow-hidden"
+			className="bg-white rounded-xl overflow-hidden"
 			description="list of registered scenes"
 			expand={ isExpanded }
 			setExpand={ setIsExpanded }
