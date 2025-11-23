@@ -1,4 +1,4 @@
-import { type RequireAtLeastOne, type RequireExactlyOne } from "@pronotron/utils";
+import { type RequireAtLeastOne, type RequireExactlyOne } from '@pronotron/utils';
 import { type AtlasResultWithNormalized } from '../packers/BaseTexturePacker';
 
 import { BufferGeometry } from '../geometries/BufferGeometry';
@@ -9,7 +9,8 @@ import { interleaveAttributes } from '../helpers/attributeInterleaver';
 import { BufferAttribute } from '../buffers/BufferAttribute';
 import { InterleavedBufferAttribute } from '../buffers/InterleavedBufferAttribute';
 
-import { Material } from "./Material";
+import { Material } from './Material';
+import { Rect } from './Rect';
 
 /**
  * Configuration used to initialize a {@link ParallaxScene}.
@@ -107,7 +108,7 @@ export type ParallaxSceneLayer = ParallaxLayerSettings & {
  * Base implementation of a parallax scene.
  * Handles geometry creation, resizing, and rendering data management.
  */
-export class ParallaxSceneBase
+export class ParallaxSceneBase 
 {
 	/**
 	 * User-defined unique scene identifier.
@@ -160,7 +161,7 @@ export class ParallaxSceneBase
 	 * 
 	 * @note `y` must represent the bottom in WebGL coordinates (+Y is up).
 	 */
-	rect: Rectangle = { x: 0, y: 0, w: 0, h: 0 };
+	rect: Rect = new Rect();
 
 	/**
 	 * Creates a new parallax scene base instance.
@@ -203,7 +204,9 @@ export class ParallaxSceneBase
 	 */
 	setRect( newRect: Rectangle )
 	{
-		this.rect = newRect;
+		this.rect.set( newRect );
+		this.rect.dirty = true;
+		
 		this.resize( newRect.w, newRect.h );
 	}
 
@@ -280,7 +283,8 @@ export class ParallaxSceneBase
 			}
 
 			if ( ! width || ! height ){
-				throw new Error( `Scene: ${ this.settings.id }, scaling failed.` );
+				console.error( `Scene: '${ this.settings.id }' (width: ${ width }, height: ${ height }). Scaling failed` );
+				return;
 			}
 
 			width = Math.floor( width );

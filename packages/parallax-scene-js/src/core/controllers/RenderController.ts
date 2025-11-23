@@ -5,6 +5,7 @@ import { UniformsHelper, type Uniforms } from './webgl/UniformsHelpers';
 
 import { BufferAttribute } from '../buffers/BufferAttribute';
 import { ParallaxScene } from '../components/ParallaxScene';
+import { Rect } from '../components/Rect';
 
 /**
  * Global WebGL uniform references shared across all scenes.
@@ -86,10 +87,10 @@ export class RenderController
 	private _programHelper: ProgramHelper;
 
 	/**
-	 * Cached material ID to skip redundant bindings.
+	 * Cached program by material ID to skip redundant bindings.
 	 * @internal
 	 */
-	private _materialCache?: number;
+	private _programCache?: number;
 
 	/**
 	 * Cached scene reference to reduce VAO rebindings.
@@ -112,16 +113,22 @@ export class RenderController
 
 		const gl = this._renderingContext;
 
-		// initialize GL state via IGLContext
+		// Cull face
 		gl.enable( gl.CULL_FACE );
 		gl.cullFace( gl.FRONT );
 
+		// Alpha blending
 		gl.enable( gl.BLEND );
-		//gl.blendFunc( gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
-		gl.blendFuncSeparate( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
-		//gl.colorMask( true, true, true, false );
+		gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 
+		// Turn off rendering to alpha
+		// gl.colorMask( true, true, true, false );
 		gl.clearColor( 0, 0, 0, 1 );
+
+		// Turn on scissor test
+		gl.disable( gl.SCISSOR_TEST );
+
+		//gl.enable( gl.DEPTH_TEST );
 	}
 
 	/**
@@ -129,7 +136,7 @@ export class RenderController
 	 * 
 	 * @param ratio Device pixel ratio (default = 1).
 	 */
-	setPixelRatio( ratio: number =  1 )
+	setPixelRatio( ratio: number =  1 ): void
 	{
 		this._pixelRatio = ratio;
 	}
@@ -141,23 +148,21 @@ export class RenderController
 	 * @param width CSS width in pixels.
 	 * @param height CSS height in pixels.
 	 */
-	updateResolution( width: number, height: number )
+	updateResolution( width: number, height: number ): void
 	{
 		const gl = this._renderingContext;
 		const canvas = gl.canvas as HTMLCanvasElement;
 
 		// Update physical canvas size according to pixel ratio
-		gl.canvas.width = Math.floor( width * this._pixelRatio );
-		gl.canvas.height = Math.floor( height * this._pixelRatio );
+		canvas.width = Math.floor( width * this._pixelRatio );
+		canvas.height = Math.floor( height * this._pixelRatio );
 
-		//canvas.style.width = width + 'px';
-		//canvas.style.height = height + 'px';
+		canvas.style.width = width + 'px';
+		canvas.style.height = height + 'px';
 
 		// Update global resolution uniform
 		GLOBAL_UNIFORMS.u_resolution.value.x = width;
 		GLOBAL_UNIFORMS.u_resolution.value.y = height;
-
-		gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
 	}
 
 	/**
@@ -166,64 +171,77 @@ export class RenderController
 	 * 
 	 * @param scene Scene instance to render.
 	 */
-	render( scene: ParallaxScene )
+	render( scene: ParallaxScene ): void
 	{
 		const gl = this._renderingContext;
 
-		// Abort if material is missing
-		if ( ! scene.material ){
-			console.warn( `Scene: '${ scene.id }' has not a material.` );
-			return;
-		}
+		if ( this._programCache !== scene.material.id ){
 
-		// Compile shader program if not already initialized
-		if ( ! scene.material.programInfo ){
-			const { vertex, fragment } = scene.material;
-			scene.material.programInfo = this._programHelper.createProgramInfo( [ vertex, fragment ] );
-		}
-
-		// Ensure VAO and buffers are bound before drawing
-		this._onBeforeRender( scene );
-
-		// Bind program only if material changed
-		if ( this._materialCache !== scene.material.id ){
+			/**
+			 * Compile the shader program if its not done before. 
+			 * VAO binding requires {@link ProgramInfo.attributesData},
+			 * so it should be created before _onBeforeRender() call.
+			 */
+			if ( ! scene.material.programInfo ){
+				const { vertex, fragment } = scene.material;
+				scene.material.programInfo = this._programHelper.createProgramInfo( [ vertex, fragment ] );
+			}
 
 			gl.useProgram( scene.material.programInfo.program );
 
-			// Cache material to avoid redundant gl.useProgram calls
-			this._materialCache = scene.material.id;
+			// Cache program to avoid redundant gl.useProgram calls
+			this._programCache = scene.material.id;
 
 		}
 
+		// Ensure VAO/Buffers are ready
+		this._onBeforeRender( scene );
+
 		/**
-		 * @TODO
-		 * Bind only changed uniforms
+		 * Scene rect can be change every frame
+		 * 
+		 * @todo
+		 * Add a dirty flag
 		 */
+		if ( scene.rect.dirty ){
+			scene.rect.multiplyScalar( this._pixelRatio ).floor();
+			scene.rect.dirty = false;
+		}
+
 		const { x, y, w, h } = scene.rect;
 
-		const { programInfo: { uniformsData } } = scene.material as { uniforms: Uniforms, programInfo: ProgramInfo };
+		// We are created programInfo above
+		const uniformsData = scene.material.programInfo!.uniformsData;
 
-		const updatedUniforms = {
+		const updatedUniforms: Uniforms = {
 			u_resolution: {
-				value: { x: w, y: h },
+				value: { x: w / this._pixelRatio, y: h / this._pixelRatio },
 			},
 			u_pointer: {
 				value: scene.pointer
 			},
-			u_texture: {
-				value: scene.texture
-			}
 		};
-		this._uniformsHelper.bindUniforms( uniformsData, updatedUniforms );
 
-		/**
-		 * @TODO
-		 * Cache scene to avoid unnecessary VAO rebinds.
-		 */
+		if ( this._sceneCache !== scene ){
+
+			// Rebind texture
+			updatedUniforms.u_texture = {
+				value: scene.texture
+			};
+
+			this._uniformsHelper.bindUniforms( uniformsData, updatedUniforms );
+			this._sceneCache = scene;
+
+		} else {
+
+			this._uniformsHelper.bindUniforms( uniformsData, updatedUniforms );
+
+		}
+
 		this._extensions.bindVertexArray( scene.vao! );
 
 		gl.viewport( x, y, w, h );
-    	gl.scissor( x, y, w, h );
+		gl.scissor( x, y, w, h );
 		gl.drawElements( gl.TRIANGLES, scene.geometry.index!.count, gl.UNSIGNED_SHORT, 0 );
 
 		// Unbind VAO after drawing
@@ -238,7 +256,7 @@ export class RenderController
 	 * 
 	 * @param scene Scene to dispose.
 	 */
-	dispose( scene: ParallaxScene )
+	dispose( scene: ParallaxScene ): void
 	{
 		// Remove all attribute buffers
 		Object.values( scene.geometry.attributes ).forEach( ( attribute, ndx ) => {
@@ -252,20 +270,21 @@ export class RenderController
 		// Remove index buffer
 		this._buffersHelper.remove( scene.geometry.index! );
 
-		// Delete associated texture from GPU memory
+		// Delete associated merged texture from GPU memory
 		this._renderingContext.deleteTexture( scene.texture );
+		
 		//this._renderingContext.deleteProgram
 		//this._renderingContext.deleteShader
 	}
 
 	/**
 	 * Prepares all GPU buffers before rendering.
-	 * Updates vertex/index buffers and binds VAO if not initialized.
+	 * Updates each vertex/index buffers if it needs to be updated and binds VAO if not initialized.
 	 * 
 	 * @param scene 
 	 * @internal
 	 */
-	private _onBeforeRender( scene: ParallaxScene )
+	private _onBeforeRender( scene: ParallaxScene ): void
 	{
 		/**
 		 * Each InterleavedAttribute shares same InterleavedBufferAttribute.data property as InterleavedBuffer, 
@@ -292,23 +311,25 @@ export class RenderController
 	 * @param scene Scene with interleaved geometry data.
 	 * @internal
 	 */
-	private _bindInterleavedVAO( scene: ParallaxScene )
+	private _bindInterleavedVAO( scene: ParallaxScene ): void
 	{
+		const { _extensions, _buffersHelper, _attributesHelper } = this;
+
 		// Retrieve shader attribute layout
 		const shaderAttributesData = scene.material!.programInfo!.attributesData;
 
 		// Open VAO
-		scene.vao = this._extensions.createVertexArray();
+		scene.vao = _extensions.createVertexArray();
 		
 		// Bind VAO
-		this._extensions.bindVertexArray( scene.vao );
+		_extensions.bindVertexArray( scene.vao );
 		
 		// Assign VAO
-		this._attributesHelper.bindInterleavedAttributes( scene.attributes, shaderAttributesData, this._buffersHelper.get( scene.attributes[ 0 ].data )! );
-		this._attributesHelper.bindIndices( this._buffersHelper.get( scene.geometry.index! )! );
+		_attributesHelper.bindInterleavedAttributes( scene.attributes, shaderAttributesData, _buffersHelper.get( scene.attributes[ 0 ].data )! );
+		_attributesHelper.bindIndices( _buffersHelper.get( scene.geometry.index! )! );
 		
 		// Close VAO
-		this._extensions.bindVertexArray( null );
+		_extensions.bindVertexArray( null );
 	}
 
 	/**
@@ -317,7 +338,7 @@ export class RenderController
 	 * @param scene Scene with separate attribute buffers.
 	 * @internal
 	 */
-	private _bindStandard( scene: ParallaxScene )
+	private _bindStandardVAO( scene: ParallaxScene ): void
 	{
 		const { _extensions, _buffersHelper, _attributesHelper } = this;
 
@@ -383,7 +404,7 @@ export class GLExtensionV1 implements IGLTextensions
 	 * Binds the given Vertex Array Object
 	 * @param arrayObject 
 	 */
-	bindVertexArray( arrayObject: WebGLVertexArrayObjectOES | null )
+	bindVertexArray( arrayObject: WebGLVertexArrayObjectOES | null ): void
 	{
 		this._vaoExtension.bindVertexArrayOES( arrayObject );
 	}
@@ -394,12 +415,6 @@ export class GLExtensionV1 implements IGLTextensions
  */
 export class GLExtensionV2 implements IGLTextensions
 {
-	/**
-	 * WebGL version flag.
-	 * @internal
-	 */
-	private _version = "2";
-
 	/**
 	 * Reference to WebGL2 rendering context.
 	 * @internal
@@ -423,7 +438,7 @@ export class GLExtensionV2 implements IGLTextensions
 	 * Binds the given Vertex Array Object.
 	 * @param arrayObject 
 	 */
-	bindVertexArray( arrayObject: WebGLVertexArrayObject | null )
+	bindVertexArray( arrayObject: WebGLVertexArrayObject | null ): void
 	{
 		this._gl.bindVertexArray( arrayObject );
 	}

@@ -1,5 +1,5 @@
 import { GLController } from './controllers/GLController';
-import { GLOBAL_UNIFORMS, RenderController } from './controllers/RenderController';
+import { RenderController } from './controllers/RenderController';
 import { ResourceController } from './controllers/ResourceController';
 
 import { BasicAssetLoader } from './loaders/basic/BasicAssetLoader';
@@ -37,6 +37,9 @@ export type ParallaxManagerDeps = {
  */
 export class ParallaxManager
 {	
+	/**
+	 * List of registered scenes in the system
+	 */
 	scenes: Map<string, ParallaxScene> = new Map();
 
 	/**
@@ -97,7 +100,7 @@ export class ParallaxManager
 			// Check if the scene already exists in the manager
 			if ( this.scenes.has( id ) ){
 
-				console.warn( `Scene: '${ id }' is exist` );
+				console.warn( `ParallaxManager: scene '${ id }' is exist.` );
 
 				const sceneCache = this.scenes.get( id )!;
 				sceneCache.active = true;
@@ -123,9 +126,9 @@ export class ParallaxManager
 
 			for ( const { url, file } of images ){
 				/**
-				 * @TODO
+				 * @todo
 				 * - Close ImageBitmaps to release memory.
-				 * - Provide option for user to dispose ImageBitmaps if not reused.
+				 * - Provide a method to user to dispose ImageBitmaps.
 				 * 
 				 * file.close(); 
 				 */
@@ -133,11 +136,11 @@ export class ParallaxManager
 			}
 
 			// Build layer data for ParallaxScene construction
-			const finalSceneData: ParallaxLayer[] = layers.map( ( layerOption, index ) => {
+			const finalLayersData: ParallaxLayer[] = layers.map( ( layerOption, index ) => {
 
 				const atlas = data.atlas.find( atlasLayer => atlasLayer.id === layerOption.url );
 
-				if ( ! atlas ) throw new Error( `Texture packing error` );
+				if ( ! atlas ) throw new Error( `ParallaxManager: '${ layerOption.url }' texture packing error.` );
 
 				return {
 					id: `${ index }`,
@@ -151,7 +154,7 @@ export class ParallaxManager
 
 			const parallaxScene = new ParallaxScene( {
 				id: id,
-				layers: finalSceneData,
+				layers: finalLayersData,
 				texture: mergedImageTexture,
 				material: DEFAULT_MATERIAL
 			} );
@@ -174,12 +177,10 @@ export class ParallaxManager
 	 * @param height Canvas height in pixels.
 	 * @param pixelRatio Optional pixel ratio for HiDPI displays.
 	 */
-	updateResolution( width: number, height: number, pixelRatio: number = 1.0 )
+	updateResolution( width: number, height: number, pixelRatio: number = 1.0 ): void
 	{
 		this._renderController.setPixelRatio( pixelRatio );
 		this._renderController.updateResolution( width, height );
-		GLOBAL_UNIFORMS.u_resolution.value.x = width;
-		GLOBAL_UNIFORMS.u_resolution.value.y = height;
 	}
 
 	/**
@@ -188,7 +189,7 @@ export class ParallaxManager
 	 * @info Use `scene.active = false` for temporary deactivation instead of disposal.
 	 * @param scene Scene to be disposed.
 	 */
-	dispose( scene: ParallaxScene )
+	dispose( scene: ParallaxScene ): void
 	{
 		// Dispose individual ImageBitmaps
 		for ( const layer of scene.settings.layers ){
@@ -204,13 +205,13 @@ export class ParallaxManager
 		// Remove scene reference from manager
 		this.scenes.delete( scene.id );
 
-		console.warn( `Scene '${ scene.id }' disposed.` );
+		console.warn( `Scene: '${ scene.id }' disposed.` );
 	}
 
 	/**
 	 * Renders all active ParallaxScenes managed by this instance.
 	 */
-	render()
+	render(): void
 	{
 		const gl = this._glController.gl;
 
