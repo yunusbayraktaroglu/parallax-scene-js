@@ -111,10 +111,12 @@ export class ParallaxManager
 
 			// Merge all images into a single ImageBitmap
 			const { image, data, hash } = await this._resourceController.merge( images, { alpha: true } );
-			//image.close();
 
 			// Create a WebGL texture from the merged image
-			const mergedImageTexture = this._resourceController.createTexture( hash, image, { premultiplyAlpha: false } );
+			const mergedImageTexture = this._resourceController.createTexture( hash, image, { premultiplyAlpha: true } );
+
+			// If the ImageBitmap will not be used again, we should release memory
+			// image.close();
 
 			// Register resources in the resource controller
 			this._resourceController.add( `Merged:${ scene.id }`, image );
@@ -138,7 +140,6 @@ export class ParallaxManager
 				if ( ! atlas ) throw new Error( `Texture packing error` );
 
 				return {
-					// Expand with index: allows multiple uses of same image URL in one scene
 					id: `${ index }`,
 					image: layerOption.url,
 					settings: layerOption,
@@ -213,7 +214,7 @@ export class ParallaxManager
 	{
 		const gl = this._glController.gl;
 
-		gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+		gl.clear( gl.COLOR_BUFFER_BIT );
 
 		this.scenes.forEach( scene => {
 			if ( scene.active ){
