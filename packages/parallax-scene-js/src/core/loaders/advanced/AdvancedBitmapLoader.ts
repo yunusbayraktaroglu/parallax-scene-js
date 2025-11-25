@@ -1,8 +1,5 @@
 import { FileLoader } from './FileLoader';
-import { Loader, FileOption } from '../core/Loader';
-import { OnError, OnLoad, OnProgress } from '../core/LoaderUtils';
-
-import { AdvancedOnProgress } from '../core/Loader';
+import { Loader, FileOption, AdvancedOnProgress, OnError } from '../core/Loader';
 
 /**
  * An `ImageBitmap` provides an asynchronous and resource efficient pathway to prepare
@@ -39,8 +36,6 @@ export class AdvancedBitmapLoader extends Loader<ImageBitmap>
 		premultiplyAlpha: 'none',
 		colorSpaceConversion: 'none'
 	};
-
-	abort(){ return this; }
 
 	constructor()
 	{

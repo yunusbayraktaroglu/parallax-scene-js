@@ -87,7 +87,6 @@ export class ParallaxGeometry extends BufferGeometry
 			parallax[ j + 1 ] = parallaxLayer.settings.parallax.y || 0;
 		}
 
-
 		// Create scale attributes
 		// default: image source default size
 		const scale = [];

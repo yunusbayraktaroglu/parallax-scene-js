@@ -1,10 +1,9 @@
+import { Loader, BasicOnProgress, OnError } from '../core/Loader';
 import { Cache } from '../core/Cache';
-import { Loader, FileOption, BasicOnProgress } from '../core/Loader';
-import { OnError, OnLoad, OnProgress } from '../core/LoaderUtils';
-
-import { LoadingManager } from './LoadingManager';
 
 const _errorMap = new WeakMap();
+
+type CachedResource = Promise<ImageBitmap | void> | ImageBitmap | undefined;
 
 /**
  * A basic loader that do not supports {@link ProgressEvent}, 
@@ -12,14 +11,11 @@ const _errorMap = new WeakMap();
  * 
  * ```ts
  * const loader = new BasicBitmapLoader();
- * loader.setOptions( { imageOrientation: 'flipY' } ); // set options if needed
  * const imageBitmap = await loader.loadAsync( 'image.png' );
  * ```
  */
 export class BasicBitmapLoader extends Loader<ImageBitmap>
 {
-	manager = new LoadingManager();
-
 	/**
 	 * Represents the loader options.
 	 *
@@ -29,13 +25,6 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 		premultiplyAlpha: 'none',
 		colorSpaceConversion: 'none'
 	};
-
-	/**
-	 * Used for aborting requests.
-	 *
-	 * @private
-	 */
-	private _abortController = new AbortController();
 
 	/**
 	 * Sets the given loader options. The structure of the object must match the `options` parameter of
@@ -61,63 +50,29 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 	 */
 	load( url: string, onLoad: ( image: ImageBitmap ) => void, onProgress: BasicOnProgress, onError: OnError )
 	{
-		this.manager.onProgress = onProgress;
-
 		if ( this.path !== undefined ) url = this.path + url;
 
 		const cached = Cache.get( `image-bitmap:${ url }` );
 
-		if ( cached !== undefined ){
+		// Handle cache hit
+        if ( cached !== undefined ){
+            return this._loadCached( cached, url, onLoad, onProgress, onError );
+        }
 
-			this.manager.itemStart( url );
-
-			// If cached is a promise, wait for it to resolve
-			if ( cached.then ){
-
-				cached.then( ( imageBitmap: ImageBitmap ) => {
-
-					// check if there is an error for the cached promise
-					if ( _errorMap.has( cached ) === true ){
-
-						onError?.( _errorMap.get( cached ) );
-
-						this.manager.itemError( url );
-						this.manager.itemEnd( url );
-
-					} else {
-
-						onLoad?.( imageBitmap );
-
-						this.manager.itemEnd( url );
-
-						return imageBitmap;
-
-					}
-
-				} );
-
-				return;
-
-			}
-
-			// If cached is not a promise (i.e., it's already an imageBitmap)
-			setTimeout( () => {
-				onLoad?.( cached );
-				this.manager.itemEnd( url );
-			}, 0 );
-
-			return cached;
-
-		}
-
-		// create request
+		// Handle network request
 		const REQUEST = new Request( url, {
 			headers: new Headers( this.requestHeader ),
 			credentials: ( this.crossOrigin === 'anonymous' ) ? 'same-origin' : 'include',
-			signal: ( typeof AbortSignal.any === 'function' ) ? AbortSignal.any( [ this._abortController.signal ] ) : this._abortController.signal
+			signal: this._abortController.signal
 		} );
 
 		const promise = fetch( REQUEST ).then( function ( res ){
+
+			// Reject if the response status is successful (200-299)
+			// To avoid following redundant createImageBitmap() execute
+			if ( ! res.ok ){
+				throw new Error( `${ res.status }': ${ url }` );
+			}
 
 			return res.blob();
 
@@ -129,41 +84,72 @@ export class BasicBitmapLoader extends Loader<ImageBitmap>
 
 			Cache.add( `image-bitmap:${ url }`, imageBitmap );
 
-			onLoad?.( imageBitmap );
-
-			this.manager.itemEnd( url );
+			onLoad( imageBitmap );
+			onProgress( url );
 
 			return imageBitmap;
 
 		} ).catch( ( error ) => {
 
-			onError?.( error );
-
 			_errorMap.set( promise, error );
 
 			Cache.remove( `image-bitmap:${ url }` );
 
-			this.manager.itemError( url );
-			this.manager.itemEnd( url );
+			onError( error );
+			onProgress( url );
 
 		} );
 
 		Cache.add( `image-bitmap:${ url }`, promise );
-		this.manager.itemStart( url );
 
 	}
 
 	/**
-	 * Aborts ongoing fetch requests.
-	 *
-	 * @return A reference to this instance.
+	 * Handles resources that have already been requested or loaded.
+	 * If the cached item is a Promise, it waits for resolution.
+	 * If the cached item is an object, it triggers callbacks asynchronously via microtask.
+	 * 
+	 * @param cached - The cached resource (either a pending Promise or an ImageBitmap).
+	 * @param url - The URL associated with the resource.
+	 * @param onLoad - Optional callback to execute on successful loading.
+	 * @param onError - Optional callback to execute if an error occurs.
+	 * @returns The cached resource.
+	 * @internal
 	 */
-	abort()
-	{
-		this._abortController.abort();
-		this._abortController = new AbortController();
+	private _loadCached( cached: CachedResource, url: string, onLoad: ( image: ImageBitmap ) => void, onProgress: BasicOnProgress, onError: OnError ): CachedResource
+	{    
+		// Scenario A: Cache is a pending Promise
+		if ( cached instanceof Promise ){
 
-		return this;
+			cached.then( ( imageBitmap ) => {
+
+				// check if there is an error for the cached promise
+				if ( _errorMap.has( cached ) ){
+
+					onError( _errorMap.get( cached ) );
+					onProgress( url );
+
+				} else {
+
+					onLoad( imageBitmap as ImageBitmap );
+					onProgress( url );
+
+					return imageBitmap;
+					
+				}
+
+			} );
+
+			return cached;
+		}
+
+		// Scenario B: Cache is a fully loaded ImageBitmap
+		// We use queueMicrotask (or setTimeout 0) to ensure async behavior consistency
+		queueMicrotask( () => {
+			onLoad( cached as ImageBitmap );
+			onProgress( url );
+		} );
+
+		return cached;
 	}
-
 }
