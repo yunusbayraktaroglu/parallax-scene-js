@@ -1,32 +1,37 @@
-/**
- * Why use sizeInBytes
- * 
- * - If images are cross-origin and the server doesn’t expose headers with CORS, 
- * the browser will give you an opaque response and you can’t read Content-Length in JS. 
- * In that case a manifest (or server-side header exposure) is the only practical way 
- * to know sizes in-browser without extra server coordination.
- * 
- * - Servers/CDNs and chunked/compressed transfers: 
- * Some responses use Transfer-Encoding: chunked or are compressed; Content-Length might be absent or report compressed bytes. 
- * Decide whether your manifest stores transferred bytes or uncompressed file size — for progress you normally want the number of bytes that will be transferred.
- */
-
 export type FileURL = string;
 
 export type FileOption = FileURL | {
 	url: string;
+	/**
+	 * Why use sizeInBytes
+	 * 
+	 * - If images are cross-origin and the server doesn’t expose headers with CORS, 
+	 * the browser will give you an opaque response and you can’t read Content-Length in JS. 
+	 * In that case a manifest (or server-side header exposure) is the only practical way 
+	 * to know sizes in-browser without extra server coordination.
+	 * - Servers/CDNs and chunked/compressed transfers: 
+	 * Some responses use Transfer-Encoding: chunked or are compressed; Content-Length might be absent or report compressed bytes. 
+	 * Decide whether your manifest stores transferred bytes or uncompressed file size 
+	 * for progress you normally want the number of bytes that will be transferred.
+	 */
 	sizeInBytes: number;
 };
 
 /**
- * Uses item count based onProgress
+ * When an item success or fails,
+ * basic onprogress executes with url
  */
-export type BasicOnProgress = ( url: string, loaded: number, total: number ) => void;
+export type BasicOnProgress = ( url: string ) => void;
 
 /**
  * Uses chunk based onProgress
  */
 export type AdvancedOnProgress = ( event: ProgressEvent ) => void;
+
+/**
+ * OnError callback
+ */
+export type OnError = ( err: unknown ) => void;
 
 /**
  * Abstract base class for loaders.
@@ -36,6 +41,22 @@ export type AdvancedOnProgress = ( event: ProgressEvent ) => void;
  */
 export abstract class Loader<TData = unknown>
 {
+	/**
+	 * This method needs to be implemented by all concrete loaders. 
+	 * It holds the logic for loading assets from the backend.
+	 *
+	 * @param file - The path/URL of the file to be loaded.
+	 * @param onLoad - Executed when the loading process has been finished.
+	 * @param onProgress - Executed while the loading is in progress.
+	 * @param onError - Executed when errors occur.
+	 */
+	abstract load(
+		file: FileOption,
+		onLoad: ( data: TData ) => void,
+		onProgress?: BasicOnProgress | AdvancedOnProgress,
+		onError?: OnError
+	): void;
+
 	/**
 	 * The crossOrigin string to implement CORS for loading the url from a
 	 * different domain that allows CORS.
@@ -64,35 +85,22 @@ export abstract class Loader<TData = unknown>
 	requestHeader: { [ header: string ]: any } = {};
 
 	/**
-	 * This method needs to be implemented by all concrete loaders. 
-	 * It holds the logic for parsing the asset into entities.
-	 *
-	 * @param data - The data to parse.
+	 * Used for aborting requests.
 	 */
-	// abstract parse( data: any ): any;
+	_abortController = new AbortController();
 
 	/**
-	 * This method needs to be implemented by all concrete loaders. 
-	 * It holds the logic for loading assets from the backend.
-	 *
-	 * @param file - The path/URL of the file to be loaded.
-	 * @param onLoad - Executed when the loading process has been finished.
-	 * @param onProgress - Executed while the loading is in progress.
-	 * @param onError - Executed when errors occur.
-	 */
-	abstract load(
-		file: FileOption,
-		onLoad: ( data: TData ) => void,
-		onProgress?: BasicOnProgress | AdvancedOnProgress,
-		onError?: ( err: unknown ) => void
-	): void;
-
-	/**
-	 * This method can be implemented in loaders for aborting ongoing requests.
+	 * Aborts ongoing fetch requests.
 	 *
 	 * @return A reference to this instance.
 	 */
-	abstract abort(): this;
+	abort(): this
+	{
+		this._abortController.abort();
+		this._abortController = new AbortController();
+
+		return this;
+	}
 
 	/**
 	 * A async version of {@link Loader#load}

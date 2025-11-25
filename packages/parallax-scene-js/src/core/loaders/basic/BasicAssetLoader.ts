@@ -1,7 +1,5 @@
 import { type ImageDownloadResult } from "../../controllers/ResourceController";
 import { BasicBitmapLoader } from "./BasicBitmapLoader";
-import { BasicOnProgress } from "../core/Loader";
-import { LoadingManager } from "./LoadingManager";
 
 /**
  * Represents a single image load request.
@@ -36,18 +34,17 @@ export class BasicAssetLoader
 	{
 		try {
 
-			/**
-			 * @todo
-			 * Each request batch may use its own loading manager
-			 */
-			//const manager = new LoadingManager();
-			//manager.onProgress = ( url, loadedItem, totalItem ) => onProgress?.( ( loadedItem / totalItem ) * 100 );
-			
+			let itemsTotal = images.length;
+			let itemsLoaded = 0;
+
 			// Create async download tasks for each image
 			const layerPromises = images.map( async ( image ) => 
 			{
-				return this._imageLoader.loadAsync( image.url, ( url: string, loaded: number, total: number ) => {
-					onProgress?.( ( loaded / total ) * 100 );
+				return this._imageLoader.loadAsync( image.url, ( url: string ) => {
+					// In every scenario onProgress() going to executed by BasicBitmapLoader
+					// It might be success or failure
+					itemsLoaded++;
+					onProgress?.( ( itemsLoaded / itemsTotal ) * 100 );
 				} )
 				.then( imageBitmap => {
 					return { url: image.url, file: imageBitmap }; 
@@ -57,6 +54,7 @@ export class BasicAssetLoader
 				} );
 			} );
 
+			// Promise.all will forces all promises to resolved 
 			return await Promise.all( layerPromises );
 
 		} catch( error ){

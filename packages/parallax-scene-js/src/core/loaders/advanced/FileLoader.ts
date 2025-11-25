@@ -1,9 +1,11 @@
-import { Loader, FileOption, AdvancedOnProgress } from '../core/Loader';
-import { HttpError, OnError, OnLoad, OnProgress } from '../core/LoaderUtils';
+import { Loader, FileOption, AdvancedOnProgress, OnError } from '../core/Loader';
+import { HttpError } from '../core/LoaderUtils';
 import { Cache } from '../core/Cache';
 
+export type FileOnLoad = ( data: string | ArrayBuffer | Blob | ImageBitmap ) => void;
+
 interface LoadCallback{
-	onLoad?: OnLoad;
+	onLoad?: FileOnLoad;
 	onProgress?: AdvancedOnProgress;
 	onError?: OnError;
 };
@@ -29,17 +31,12 @@ export class FileLoader extends Loader<string | ArrayBuffer | Blob | ImageBitmap
 	 * The expected mime type. Valid values can be found
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString#mimetype
 	 */
-	public mimeType: string = '';
+	mimeType: string = '';
 
 	/**
 	 * The expected response type.
 	 */
-	public responseType: 'arraybuffer' | 'blob' | 'json' | '' = '';
-
-	/**
-	 * Used for aborting requests.
-	 */
-	private _abortController = new AbortController();
+	responseType: 'arraybuffer' | 'blob' | 'json' | '' = '';
 
 	/**
 	 * Starts loading from the given URL and pass the loaded response to the `onLoad()` callback.
@@ -49,7 +46,7 @@ export class FileLoader extends Loader<string | ArrayBuffer | Blob | ImageBitmap
 	 * @param onProgress - Executed while the loading is in progress.
 	 * @param onError - Executed when errors occur.
 	 */
-	load( file: FileOption, onLoad?: OnLoad, onProgress?: AdvancedOnProgress, onError?: OnError )
+	load( file: FileOption, onLoad?: FileOnLoad, onProgress?: AdvancedOnProgress, onError?: OnError )
 	{
 		let url: any = false;
 		let sizeInBytes: any = false;
@@ -257,18 +254,4 @@ export class FileLoader extends Loader<string | ArrayBuffer | Blob | ImageBitmap
 		this.mimeType = value;
 		return this;
 	}
-
-	/**
-	 * Aborts ongoing fetch requests.
-	 *
-	 * @return A reference to this instance.
-	 */
-	abort(): this
-	{
-		this._abortController.abort();
-		this._abortController = new AbortController();
-
-		return this;
-	}
-
 }

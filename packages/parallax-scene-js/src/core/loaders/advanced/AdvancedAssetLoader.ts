@@ -1,6 +1,6 @@
 import { type ImageDownloadResult } from "../../controllers/ResourceController";
-import { AdvancedBitmapLoader } from "./AdvancedBitmapLoader";
 import { ParallaxSceneLayer } from "../../components/ParallaxScene";
+import { AdvancedBitmapLoader } from "./AdvancedBitmapLoader";
 
 /**
  * Represents a single asset load request.

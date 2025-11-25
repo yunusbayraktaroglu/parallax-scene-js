@@ -1,4 +1,5 @@
-type CacheFile = any; // Can be narrowed if needed
+ // Can be narrowed if needed
+type CacheFile = any;
 
 export const Cache = {
 	/**
