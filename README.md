@@ -12,7 +12,7 @@ Supports WebGL 1 & 2.
 
 <br/>
 
-https://github.com/yunusbayraktaroglu/parallax-scene-js/assets/25721593/03b2734f-f50b-41c9-a172-b1118c52e2e9
+https://github.com/user-attachments/assets/25261f57-cb01-4ca8-bb77-647b00ec1e3c
 
 Live: [https://yunusbayraktaroglu.github.io/parallax-scene-js/](https://yunusbayraktaroglu.github.io/parallax-scene-js/)
 <br /><br />
