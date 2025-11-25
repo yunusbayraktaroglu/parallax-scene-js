@@ -12,7 +12,7 @@ Supports WebGL 1 & 2.
 
 <br/>
 
-https://github.com/yunusbayraktaroglu/parallax-scene-js/assets/25721593/03b2734f-f50b-41c9-a172-b1118c52e2e9
+https://github.com/user-attachments/assets/25261f57-cb01-4ca8-bb77-647b00ec1e3c
 
 Live: [https://yunusbayraktaroglu.github.io/parallax-scene-js/](https://yunusbayraktaroglu.github.io/parallax-scene-js/)
 <br /><br />
@@ -25,10 +25,10 @@ const MANAGER = createParallaxManager( {
   canvas: HTMLCanvasElement,
   version: "2",
   attributes: {
-	alpha: false,
-	depth: false,
-	stencil: false,
-	premultipliedAlpha: false
+    alpha: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: false
   },
   /**
    * - advanced: uses AdvancedAssetLoader, supports ProgressEvent, and displays percentage-based progress
@@ -54,21 +54,21 @@ const MANAGER = createParallaxManager( {
 const SCENE_SETTINGS: ParallaxSceneOptions = {
   id: "my_parallax_scene",
   layers: [
-	// The first object in the array represents the bottom-most layer
-	{ 
-	  url: 'images/parallax-1.png',
-	  fit: {
-		h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
-	  },
-	  parallax: {
-		x: 0.3,
-		y: 1 // Keep the layer from moving out of the canvas
-	  },
-	  translate: {
-		x: -0.25, // Position the layer relative to its size
-	  }
-	},
-	items...
+    // The first object in the array represents the bottom-most layer
+    { 
+      url: 'images/parallax-1.png',
+      fit: {
+        h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
+      },
+      parallax: {
+        x: 0.3,
+        y: 1 // Keep the layer from moving out of the canvas
+      },
+      translate: {
+        x: -0.25, // Position the layer relative to its size
+      }
+    },
+    items...
   ];
 };
 
@@ -89,7 +89,7 @@ Parallax has been a core visual technique for over 90 years, used since the earl
 See [CONTRIBUTING ↗](.github/CONTRIBUTING.md)
 
 <div align="right">
-	<sub>Created by <a href="https://www.linkedin.com/in/yunusbayraktaroglu/">Yunus Bayraktaroglu</a> with ❤️</sub>
+  <sub>Created by <a href="https://www.linkedin.com/in/yunusbayraktaroglu/">Yunus Bayraktaroglu</a> with ❤️</sub>
 </div>
 
 [npm]: https://img.shields.io/npm/v/@pronotron/parallax-scene-js
