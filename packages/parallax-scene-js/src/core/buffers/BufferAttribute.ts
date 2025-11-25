@@ -1,12 +1,10 @@
+import { BufferBase } from "./BufferBase";
+import { type Usage, StaticDrawUsage, FloatType } from './constants';
+
 import { Vector2 } from '../math/Vector2';
 import { Matrix3 } from '../math/Matrix3';
 
-import { type Usage, type AttributeGPUType, StaticDrawUsage, FloatType } from './constants';
-import { BufferBase } from "./BufferBase";
-
 const _vector2 = new Vector2();
-
-let _id = 0;
 
 /**
  * This class stores data for an attribute (such as vertex positions, face
@@ -18,18 +16,12 @@ let _id = 0;
  */
 export class BufferAttribute extends BufferBase
 {
+	private static _nextId = 0;
+
 	/**
      * Unique number for this attribute instance.
      */
-	readonly id: number;
-
-	 /**
-     * Read-only flag to check if a given object is of type {@link BufferAttribute}.
-	 * 
-     * @remarks This is a _constant_ value
-     * @defaultValue `true`
-     */
-	readonly isBufferAttribute = true;
+	readonly id = BufferAttribute._nextId++;;
 
 	/**
      * Represents the number of items this buffer attribute stores. It is internally computed by dividing the
@@ -38,35 +30,14 @@ export class BufferAttribute extends BufferBase
     readonly count: number;
 
 	/**
-	 * Applies to integer data only. Indicates how the underlying data in the buffer maps to
-	 * the values in the GLSL code. For instance, if `array` is an instance of `UInt16Array`,
-	 * and `normalized` is `true`, the values `0 - +65535` in the array data will be mapped to
-	 * `0.0f - +1.0f` in the GLSL attribute. If `normalized` is `false`, the values will be converted
-	 * to floats unmodified, i.e. `65535` becomes `65535.0f`.
-	 */
-    normalized: boolean;
-
-	/**
 	 * A version number, incremented every time the `needsUpdate` is set to `true`.
 	 */
     version: number = 0;
-
-	/**
-     * Optional name for this attribute instance.
-     * @defaultValue ''
-     */
-	name: string = '';
 
     /**
      * The holding data stored in the buffer.
      */
     array: TypedArray;
-
-	/**
-     * The length of vectors that are being stored in the {@link BufferAttribute.array | array}.
-     * @remarks Expects a `Integer`
-     */
-    itemSize: number;
 
 	/**
 	 * Defines the intended usage pattern of the data store for optimization purposes.
@@ -77,16 +48,6 @@ export class BufferAttribute extends BufferBase
 	 * @default StaticDrawUsage
 	 */
     usage: Usage = StaticDrawUsage;
-
-	/**
-	 * Configures the bound GPU type for use in shaders.
-	 *
-	 * Note: this only has an effect for integer arrays and is not configurable for float arrays.
-	 * For lower precision float types, use `Float16BufferAttribute`.
-	 *
-	 * @default FloatType
-	 */
-    gpuType: AttributeGPUType = FloatType;
 
 	/**
 	 * This can be used to only update some components of stored vectors (for example, just the
@@ -114,22 +75,13 @@ export class BufferAttribute extends BufferBase
 	 */
 	constructor( array: TypedArray, itemSize: number, normalized = false )
 	{
-		super();
-
-		if ( Array.isArray( array ) ){
-			throw new TypeError( 'BufferAttribute: array should be a Typed Array.' );
-		}
+		super( itemSize );
 
 		this.array = array;
 		this.itemSize = itemSize;
 		this.normalized = normalized;
-		this.version = 0;
 
-		this.count = array !== undefined ? array.length / itemSize : 0;
-
-		_id++;
-
-		this.id = _id;  
+		this.count = array.length / itemSize || 0;
 	}
 
 	/**

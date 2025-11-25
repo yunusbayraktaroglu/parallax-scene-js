@@ -156,5 +156,3 @@ export const UnsignedInt5999Type = 35902;
  * @constant
  */
 export const UnsignedInt101111Type = 35899;
-
-export type AttributeGPUType = typeof FloatType | typeof IntType;

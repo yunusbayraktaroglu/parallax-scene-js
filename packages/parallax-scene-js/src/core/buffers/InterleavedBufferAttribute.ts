@@ -9,35 +9,20 @@ import { BufferBase } from "./BufferBase";
 export class InterleavedBufferAttribute extends BufferBase
 {
 	/**
-	 * The name of the buffer attribute.
-	 * @defaultValue ''
-	 */
-	name: string = '';
-
-	/**
 	 * The buffer holding the interleaved data.
 	 */
 	data: InterleavedBuffer;
-
-	/**
-	 * The item size, see {@link BufferAttribute#itemSize}.
-	 */
-	itemSize: number;
 
 	/**
 	 * The attribute offset into the buffer.
 	 */
 	offset: number;
 
-	/**
-	 * Whether the data are normalized or not, see {@link BufferAttribute#normalized}
-	 */
-    normalized: boolean;
-	
 	get array()
 	{
 		return this.data.array;
 	}
+	
 	get count()
 	{
 		return this.data.count;
@@ -53,10 +38,9 @@ export class InterleavedBufferAttribute extends BufferBase
 	 */
 	constructor( interleavedBuffer: InterleavedBuffer, itemSize: number, offset: number, normalized = false )
 	{
-		super();
+		super( itemSize );
 
 		this.data = interleavedBuffer;
-		this.itemSize = itemSize;
 		this.offset = offset;
 		this.normalized = normalized;
 	}

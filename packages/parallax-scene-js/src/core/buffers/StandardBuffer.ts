@@ -7,7 +7,7 @@ import { Usage, StaticDrawUsage } from "./constants";
  * An introduction into interleaved arrays can be found here: 
  * {@link https://blog.tojicode.com/2011/05/interleaved-array-basics.html | Interleaved array basics}
  */
-export class InterleavedBuffer 
+export class StandardBuffer 
 {
 	/**
 	 * A version number, incremented every time the `needsUpdate` is set to `true`.
