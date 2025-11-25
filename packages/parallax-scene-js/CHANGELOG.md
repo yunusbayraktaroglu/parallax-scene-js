@@ -1,5 +1,14 @@
 # @pronotron/parallax-scene-js
 
+## 3.0.2
+
+### Patch Changes
+
+- fbdca4e: 
+  - Refactored the basic load system to use group-level progress and simplify its structure.
+  - Added missing settings to the README and fixed indentation.
+  - Improved Buffer attribute classes.
+
 ## 3.0.1
 
 ### Patch Changes
