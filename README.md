@@ -22,46 +22,61 @@ Live: [https://yunusbayraktaroglu.github.io/parallax-scene-js/](https://yunusbay
 import { type ParallaxSceneOptions, createParallaxManager } from "@pronotron/parallax-scene-js";
 
 const MANAGER = createParallaxManager( {
-	canvas: HTMLCanvasElement,
-	version: "2",
-	attributes: {
-		alpha: false,
-		depth: false,
-		stencil: false,
-		premultipliedAlpha: false
-	},
-	/**
-	 * - advanced: Uses AdvancedAssetLoader, supports ProgressEvent and displays percentage-based progress.
-	 * - basic: Uses BasicAssetLoader, uses item count–based progress.
-	 */
-	loader: "advanced",
+  canvas: HTMLCanvasElement,
+  version: "2",
+  attributes: {
+	alpha: false,
+	depth: false,
+	stencil: false,
+	premultipliedAlpha: false
+  },
+  /**
+   * - advanced: uses AdvancedAssetLoader, supports ProgressEvent, and displays percentage-based progress
+   * - basic: uses BasicAssetLoader and provides item-count–based progress
+   */
+  loader: "advanced",
+  /**
+   * - binaryTree: uses the binarytree texture packing algorithm
+   * - skyline: uses the skyline texture packing algorithm
+   * @default 'binaryTree'
+   */
+  texturePacker?: "binaryTree",
+  /**
+   * Instead of using the device's MAX_TEXTURE_SIZE,
+   * use a custom value:
+   * 256, 512, 1024, 2048, 4096, ...
+   * Generated textures will be resized to this value.
+   * @default number
+   */
+  maxTextureSize?: 2048
 } );
 
 const SCENE_SETTINGS: ParallaxSceneOptions = {
-	id: "my_parallax_scene",
-	layers: [
-		// The first object in the array represents the bottom-most layer
-		{ 
-			url: 'images/parallax-1.png',
-			fit: {
-				h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
-			},
-			parallax: {
-				x: 0.3,
-				y: 1 // Move the layer without it moving out of the canvas.
-			},
-			translate: {
-				x: -0.25, // Position the layer respective to its size
-			}
-		},
-		items...
-	];
-} ;
+  id: "my_parallax_scene",
+  layers: [
+	// The first object in the array represents the bottom-most layer
+	{ 
+	  url: 'images/parallax-1.png',
+	  fit: {
+		h: 1.5 // Scale the layer to 1.5 times the height of the canvas while maintaining its ratio
+	  },
+	  parallax: {
+		x: 0.3,
+		y: 1 // Keep the layer from moving out of the canvas
+	  },
+	  translate: {
+		x: -0.25, // Position the layer relative to its size
+	  }
+	},
+	items...
+  ];
+};
 
 const PARALLAX_SCENE = await MANAGER.initScene( SCENE_SETTINGS );
+PARALLAX_SCENE.active = true;
 
-// Now scene is renderable
-MANAGER.renderScene( PARALLAX_SCENE );
+// Renders all active scenes
+MANAGER.render();
 ```
 
 <br/><br/>
